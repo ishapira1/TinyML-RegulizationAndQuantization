@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='TinyML-RegulizationAndQuantization',
+    name='tinyml',
     version='0.1.0',
     author='Itai Shapira',
     author_email='itaishapira@g.harvard.edu',
