@@ -6,8 +6,8 @@ validation, and testing procedures.
 
 import torch
 import torch.optim as optim
-from .data.dataset_loader import get_dataloader
-from .models.model_registry import create_alexnet, create_resnet, create_lenet
+from src.data.dataset_loader import load_dataset
+from src.models.model_registry import create_alexnet, create_resnet, create_lenet
 
 
 class Trainer:
@@ -45,15 +45,19 @@ class Trainer:
 def main():
     # Example setup
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    batch_size = 64
+    dataset_name = 'MNIST'
 
     # Get data loaders
+    train_loader = load_dataset(dataset_name=dataset_name, batch_size=batch_size, train=True)
+    val_loader = load_dataset(dataset_name=dataset_name, batch_size=batch_size, train=False)
     dataloaders = {
-        'train': get_dataloader('CIFAR10', 'train'),
-        'val': get_dataloader('CIFAR10', 'val')
+        'train': train_loader,
+        'val': val_loader
     }
 
     # Choose and initialize model
-    model = create_resnet(num_classes=10)
+    model = create_lenet(num_classes=10)
 
     # Loss function
     criterion = torch.nn.CrossEntropyLoss()
