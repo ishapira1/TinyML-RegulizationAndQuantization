@@ -65,7 +65,7 @@ def parser():
     df = pd.DataFrame(all_records)
 
     # Save the DataFrame to a CSV file
-    csv_file = os.path.join(logger.script_dir, 'all_results.csv')
+    csv_file = os.path.join(logger.log_dir, 'all_results.csv')
     df.to_csv(csv_file, index=False)
 
 # To run the parser function when the script is executed

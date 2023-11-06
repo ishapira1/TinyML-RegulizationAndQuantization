@@ -11,8 +11,10 @@ CHECKPOINT_FILE_NAME_IN_LOGS = 'model_checkpoint.pth'
 
 class Logger:
     def __init__(self, log_dir="logs"):
-        self.script_dir = os.path.dirname(os.path.abspath(__file__))
-        self.log_dir = os.path.join(self.script_dir, 'results')
+        self.script_dir = os.path.dirname(os.path.abspath(__file__))  # "logs"
+        self.main_dir = os.path.dirname(os.path.dirname(self.script_dir)) # main dir
+
+        self.log_dir = os.path.join(self.main_dir, 'results')
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
 
