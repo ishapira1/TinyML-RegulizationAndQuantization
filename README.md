@@ -19,7 +19,7 @@ pip install -e .
 
 To run an experiment with a predefined set of parameters, execute `src/main.py`. 
 
-minimalist examples (implemented in `src/main.py` ):
+minimalist example (implemented in `src/main.py` ):
 
 ```python
 import torch
