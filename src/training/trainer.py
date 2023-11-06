@@ -4,9 +4,10 @@ defines the training process including the training loop,
 validation, and testing procedures.
 """
 import torch
-import torch.optim as optim
+from torch.optim import Adam
 from src.data.dataset_loader import load_dataset
 from src.models.model_registry import create_model
+from tqdm import tqdm
 
 
 
@@ -31,6 +32,25 @@ class Trainer:
         self.regularization = regularization if regularization else {}
         self.verbose = verbose
 
+    def _compute_accuracy(self, dataloader):
+        """
+        Compute the accuracy given the output of the model and the labels.
+
+        :param outputs: The logits output from the model.
+        :param labels: The true labels.
+        :return: The accuracy as a percentage.
+        """
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for inputs, labels in dataloader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                outputs = self.model(inputs)
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+        accuracy = 100 * correct / total
+        return accuracy
     def _apply_regularization(self, loss):
         """
         Apply the specified regularization to the loss.
@@ -44,18 +64,21 @@ class Trainer:
         elif 'l2' in self.regularization:
             l2_reg = sum(param.pow(2.0).sum() for param in self.model.parameters())
             loss = loss + self.regularization['l2'] * l2_reg
-        elif 'linf' in self.regularization:
-            for param in self.model.parameters():
-                param.data = torch.clamp(param.data, min=-self.regularization['linf'], max=self.regularization['linf'])
         return loss
+
+    from tqdm import tqdm
 
     def train(self, num_epochs):
         """
-        Train the model for a specified number of epochs.
+        Train the model for a specified number of epochs and return the model
+        along with the final train and test loss.
 
         :param num_epochs: The number of epochs to train the model.
+        :return: tuple containing the trained model, final train loss, and final test loss.
         """
-        for epoch in range(num_epochs):
+        train_loss = 0.0
+        test_loss = 0.0
+        for epoch in tqdm(range(num_epochs), desc='Epochs'):
             self.model.train()
             running_loss = 0.0
 
@@ -63,36 +86,45 @@ class Trainer:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
 
-                with torch.set_grad_enabled(True):
-                    outputs = self.model(inputs)
-                    loss = self.criterion(outputs, labels)
-                    loss = self._apply_regularization(loss)
-                    loss.backward()
-                    self.optimizer.step()
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, labels)
+                loss = self._apply_regularization(loss)
+                loss.backward()
+                self.optimizer.step()
+
+                # Apply L-infinity regularization directly to the parameters
+                if 'linf' in self.regularization:
+                    for param in self.model.parameters():
+                        param.data = torch.clamp(param.data, min=-self.regularization['linf'], max=self.regularization['linf'])
 
                 running_loss += loss.item() * inputs.size(0)
 
-            epoch_loss = running_loss / len(self.dataloaders['train'].dataset)
+
+            # Evaluation phase
+            self.model.eval()
+            test_running_loss = 0.0
+            train_running_loss = 0.0
+            with torch.no_grad():
+                for inputs, labels in self.dataloaders['test']:
+                    inputs, labels = inputs.to(self.device), labels.to(self.device)
+                    outputs = self.model(inputs)
+                    loss = self.criterion(outputs, labels)
+                    test_running_loss += loss.item() * inputs.size(0)
+                for inputs, labels in self.dataloaders['train']:
+                    inputs, labels = inputs.to(self.device), labels.to(self.device)
+                    outputs = self.model(inputs)
+                    loss = self.criterion(outputs, labels)
+                    train_running_loss += loss.item() * inputs.size(0)
+
+            test_loss = test_running_loss / len(self.dataloaders['test'].dataset)
+            train_loss = train_running_loss / len(self.dataloaders['train'].dataset)
 
             if self.verbose:
-                print(f'Epoch {epoch + 1}/{num_epochs} - Loss: {epoch_loss:.4f}')
-                self._log_test_loss()
+                tqdm.write(f'Epoch {epoch + 1}/{num_epochs} - Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}')
 
-    def _log_test_loss(self):
-        """
-        Log the test loss if the verbose option is enabled.
-        """
-        self.model.eval()
-        test_loss = 0.0
-        with torch.no_grad():
-            for inputs, labels in self.dataloaders['test']:
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs = self.model(inputs)
-                loss = self.criterion(outputs, labels)
-                test_loss += loss.item() * inputs.size(0)
-
-        test_loss /= len(self.dataloaders['test'].dataset)
-        print(f'Test Loss: {test_loss:.4f}')
+        train_accuracy = self._compute_accuracy(self.dataloaders['train'])
+        test_accuracy = self._compute_accuracy(self.dataloaders['test'])
+        return train_loss, test_loss,train_accuracy, test_accuracy
 
 
 def main():
@@ -118,7 +150,8 @@ def main():
     criterion = torch.nn.CrossEntropyLoss()
 
     # Optimizer
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = Adam(model.parameters(), lr=0.001)
+
 
     # Create trainer instance
     trainer = Trainer(model, dataloaders, criterion, optimizer, device)
