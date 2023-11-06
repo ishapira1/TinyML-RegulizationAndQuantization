@@ -8,8 +8,14 @@ import torch
 from torch.utils.data import DataLoader
 import os
 script_path = os.path.abspath(__file__)
+
 # Find the parent directory of the script, which is assumed to be 'data'
 parent_directory = os.path.dirname(script_path)
+
+script_dir = os.path.dirname(os.path.abspath(__file__))  # "data"
+main_dir = os.path.dirname(os.path.dirname(script_dir))  # main dir
+data_dir = os.path.join(main_dir, 'data')
+
 
 # Dataset configuration class to handle dimensions and other properties
 class DatasetConfig:
@@ -52,7 +58,7 @@ def get_transforms(dataset_name):
 # Function to load datasets
 def load_dataset(dataset_name, batch_size, train=True, download=True):
     transforms = get_transforms(dataset_name)
-    dataset_directory = os.path.join(parent_directory, dataset_name)
+    dataset_directory = os.path.join(data_dir, dataset_name)
     os.makedirs(dataset_directory, exist_ok=True) # Make sure the dataset directory exists
 
 
