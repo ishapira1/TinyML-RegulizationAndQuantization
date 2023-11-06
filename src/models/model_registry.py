@@ -29,7 +29,6 @@ class LeNet(nn.Module):
         if self.use_layer_norm:
             self.ln1 = nn.LayerNorm([6, 24, 24])
             self.ln2 = nn.LayerNorm([16, 8, 8])
-
         self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, x):
@@ -123,7 +122,7 @@ def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_r
                  use_layer_norm=False):
     if arch == 'lenet':
         model = LeNet(num_classes=10 if mini else num_classes,
-                      input_channels=1 if mini else input_channels,
+                      input_channels=1,
                       dropout_rate=dropout_rate,
                       use_batch_norm=use_batch_norm,
                       use_layer_norm=use_layer_norm)
