@@ -6,7 +6,10 @@ designed to handle the loading and preprocessing of datasets
 from torchvision import datasets, transforms
 import torch
 from torch.utils.data import DataLoader
-
+import os
+script_path = os.path.abspath(__file__)
+# Find the parent directory of the script, which is assumed to be 'data'
+parent_directory = os.path.dirname(script_path)
 
 # Dataset configuration class to handle dimensions and other properties
 class DatasetConfig:
@@ -49,14 +52,19 @@ def get_transforms(dataset_name):
 # Function to load datasets
 def load_dataset(dataset_name, batch_size, train=True, download=True):
     transforms = get_transforms(dataset_name)
+    dataset_directory = os.path.join(parent_directory, dataset_name)
+    os.makedirs(dataset_directory, exist_ok=True) # Make sure the dataset directory exists
+
+
+
     if dataset_name == 'CIFAR-10':
-        dataset = datasets.CIFAR10(root='data/CIFAR-10', train=train, download=download, transform=transforms)
+        dataset = datasets.CIFAR10(root=dataset_directory, train=train, download=download, transform=transforms)
     elif dataset_name == 'MNIST':
-        dataset = datasets.MNIST(root='data/MNIST', train=train, download=download, transform=transforms)
+        dataset = datasets.MNIST(root=dataset_directory, train=train, download=download, transform=transforms)
     elif dataset_name == 'ImageNet':
-        dataset = datasets.ImageFolder(root='data/ImageNet', transform=transforms)  # Adjust the path as needed
+        dataset = datasets.ImageFolder(root=dataset_directory, transform=transforms)  # Adjust the path as needed
     elif dataset_name == 'FashionMNIST':
-        dataset = datasets.FashionMNIST(root='data/FashionMNIST', train=train, download=download, transform=transforms)
+        dataset = datasets.FashionMNIST(root=dataset_directory, train=train, download=download, transform=transforms)
     else:
         raise ValueError(f"Dataset {dataset_name} is not supported.")
 
