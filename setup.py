@@ -9,4 +9,11 @@ setup(
         "src.quantization",
         "src.training",
     ],
+    install_requires=[
+        'numpy',  # Replace with actual dependencies
+        'torch',
+        'tqdm',
+        'pandas',
+        # Add any other dependencies that your package needs
+    ],
 )
