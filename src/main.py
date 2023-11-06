@@ -1,5 +1,5 @@
 import torch
-from src.data.dataset_loader import load_dataset
+from src.data_loaders.dataset_loader import load_dataset
 from src.models.model_registry import create_model
 from src.training.trainer import Trainer
 from src.logs.logger import Logger
@@ -56,7 +56,7 @@ def run_experiments(device):
 
                         train_loss, test_loss, train_accuracy, test_accuracy = train_model(model, dataset_name, reg_name=reg_name, reg_param=param, device=device, batch_size=batch_size, num_epochs=epochs,
                                     lr=lr, verbose=True)
-                        logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=device, batch_size=batch_size, seed=seed)
+                        logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=str(device), batch_size=batch_size, seed=seed)
                 else:  # Regularizations without parameters
                     # Set flags for batch_norm and layer_norm based on reg_name
                     use_batch_norm = reg_name == 'batch_norm'
@@ -67,7 +67,7 @@ def run_experiments(device):
                                  use_layer_norm=use_layer_norm)
                     model.to(device)
                     train_loss, test_loss, train_accuracy, test_accuracy = train_model(model, dataset_name, device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
-                    logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=device, batch_size=batch_size, seed=seed)
+                    logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=str(device), batch_size=batch_size, seed=seed)
 
 
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     set_seed(seed)
 
     # Define your epochs, learning rate, dataset names, model names, and regularizations here
-    epochs = 1
+    epochs = 2
     batch_size = 256
     lr = 0.001
     DATASETS = ['MNIST'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
@@ -90,12 +90,12 @@ if __name__ == '__main__':
         # etc.
     }
     REGULARIZATIONS = {
-        #'none': None,  # No regularization parameters needed for baseline
+        'none': None,  # No regularization parameters needed for baseline
         'batch_norm': None,  # Batch normalization typically does not require explicit parameters
         'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
         'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-        'l1': [0.01, 0.001, 0.0001],  # Different L1 regularization strengths
-        'l2': [0.01, 0.001, 0.0001],  # Different L2 regularization strengths
+        'l1': [0.1, 0.01, 0.001, 0.0001],  # Different L1 regularization strengths
+        'l2': [0.1, 0.01, 0.001, 0.0001],  # Different L2 regularization strengths
         'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
     }
 
