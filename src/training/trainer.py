@@ -3,11 +3,10 @@
 defines the training process including the training loop,
 validation, and testing procedures.
 """
-
 import torch
 import torch.optim as optim
 from src.data.dataset_loader import load_dataset
-from src.models.model_registry import create_alexnet, create_resnet, create_lenet
+from src.models.model_registry import create_model
 
 
 class Trainer:
@@ -42,13 +41,15 @@ class Trainer:
             # Add validation and testing loops if needed
 
 
+# ...
+
 def main():
     # Example setup
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     batch_size = 64
-    dataset_name = 'MNIST'
+    dataset_name = 'MNIST'  # or 'CIFAR10', 'ImageNet', depending on your needs
 
-    # Get data loaders
+    # Assuming load_dataset now returns data loaders
     train_loader = load_dataset(dataset_name=dataset_name, batch_size=batch_size, train=True)
     val_loader = load_dataset(dataset_name=dataset_name, batch_size=batch_size, train=False)
     dataloaders = {
@@ -57,7 +58,9 @@ def main():
     }
 
     # Choose and initialize model
-    model = create_lenet(num_classes=10)
+    # Here you need to decide which model to use and pass the appropriate arguments
+    # Example: model = create_model('lenet', num_classes=10, mini_version=True)
+    model = create_model('lenet', mini=True)
 
     # Loss function
     criterion = torch.nn.CrossEntropyLoss()
@@ -70,6 +73,7 @@ def main():
 
     # Run training
     trainer.train(num_epochs=25)
+
 
 
 if __name__ == "__main__":
