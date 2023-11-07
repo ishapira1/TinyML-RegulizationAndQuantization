@@ -5,7 +5,7 @@ validation, and testing procedures.
 """
 import torch
 from torch.optim import Adam
-from src.data.dataset_loader import load_dataset
+from src.data_loaders.dataset_loader import load_dataset
 from src.models.model_registry import create_model
 from tqdm import tqdm
 
