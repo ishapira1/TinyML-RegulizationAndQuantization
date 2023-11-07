@@ -1,0 +1,17 @@
+{
+    "runner_id": "itaishapira",
+    "model_name": "lenet",
+    "dataset_name": "FashionMNIST",
+    "regularization": "dropout",
+    "regularization_param": 0.3,
+    "train_loss": 0.3170634151776632,
+    "test_loss": 0.3500826246023178,
+    "train_accuracy": 88.41166666666666,
+    "test_accuracy": 87.06,
+    "timestamp": "2023-11-07_08-22-51",
+    "epochs": 10,
+    "lr": 0.001,
+    "device": "cpu",
+    "batch_size": 256,
+    "seed": 42
+}
