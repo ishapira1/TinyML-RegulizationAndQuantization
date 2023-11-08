@@ -4,7 +4,7 @@ setup(
     name="Tiny Ml",
     version="1.0",
     packages=[
-        "src.data",
+        "src.data_loaders",
         "src.models",
         "src.quantization",
         "src.training",
