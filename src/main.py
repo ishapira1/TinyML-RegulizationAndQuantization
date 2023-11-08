@@ -74,6 +74,7 @@ def run_experiments(device):
 if __name__ == '__main__':
     # Check for CUDA
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
     seed = 42
     set_seed(seed)
 
@@ -81,12 +82,12 @@ if __name__ == '__main__':
     epochs = 2
     batch_size = 256
     lr = 0.001
-    DATASETS = ['MNIST'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
-    MODELS = ['lenet']# 'alexnet', 'resnet18']
+    DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
+    MODELS = ['resnet18']# 'alexnet', 'resnet18']
     COMPATIBLE_MODELS = {
         # Define which models are compatible with which datasets
         #'CIFAR-10': ['lenet', 'resnet18'],
-        'MNIST': ['lenet'],
+        'CIFAR-10': ['resnet18'],
         # etc.
     }
     REGULARIZATIONS = {
