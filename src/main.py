@@ -79,7 +79,7 @@ if __name__ == '__main__':
     set_seed(seed)
 
     # Define your epochs, learning rate, dataset names, model names, and regularizations here
-    epochs = 2
+    epochs = 10
     batch_size = 256
     lr = 0.001
     DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
