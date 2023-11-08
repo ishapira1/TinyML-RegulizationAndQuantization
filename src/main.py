@@ -74,7 +74,7 @@ def run_experiments(device):
 if __name__ == '__main__':
     # Check for CUDA
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(device)
+    print(f"device is {device}")
     seed = 42
     set_seed(seed)
 
