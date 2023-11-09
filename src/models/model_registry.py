@@ -9,20 +9,31 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
 
-
+from src.models.normalization_utils import replace_bn, add_ln
 
 # Definition for the Inception-v3 model, suitable for ImageNet by default
 class InceptionV3(nn.Module):
     def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False, pretrained=False):
         super(InceptionV3, self).__init__()
-        self.model = models.inception_v3(pretrained=pretrained, aux_logits=False)
+
+        weights = models.InceptionV3_Weights.DEFAULT if pretrained else None
+        self.model = models.inception_v3(weights=weights, aux_logits=False)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.dropout = nn.Dropout(dropout_rate)
+        if use_batch_norm and use_layer_norm:
+            raise ValueError("Batch normalization and layer normalization cannot both be true")
 
         if input_channels != 3:
             # Inception v3 expects (299, 299) sized images and 3 input channels,
             # customizing input channels is non-trivial and not supported out-of-the-box.
             raise ValueError("InceptionV3 requires 3 input channels")
+        # Replace BatchNorm layers if not using batch normalization
+        if not use_batch_norm:
+            replace_bn(self.model)
+
+        # Implement layer normalization if required
+        if use_layer_norm:
+            add_ln(self.model)
 
     def forward(self, x):
         x = self.dropout(self.model(x))
@@ -33,26 +44,33 @@ class ResNet50(nn.Module):
     def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False,
                  pretrained=False):
         super(ResNet50, self).__init__()
-        self.model = models.resnet50(pretrained=pretrained)
+
+        # Check for conflicting normalization settings
+        if use_batch_norm and use_layer_norm:
+            raise ValueError("Batch normalization and layer normalization cannot both be true")
+
+        # Set weights for pretrained model
+        weights = models.ResNet50_Weights.DEFAULT if pretrained else None
+        self.model = models.resnet50(weights=weights)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.dropout = nn.Dropout(dropout_rate)
 
+        # Replace the first convolutional layer if the input channels are not 3
         if input_channels != 3:
             self.model.conv1 = nn.Conv2d(input_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
+        # Replace BatchNorm layers if not using batch normalization
         if not use_batch_norm:
-            def replace_bn(module):
-                for name, child in module.named_children():
-                    if isinstance(child, nn.BatchNorm2d):
-                        setattr(module, name, nn.Identity())
-                    else:
-                        replace_bn(child)
-
             replace_bn(self.model)
+
+        # Implement layer normalization if required
+        if use_layer_norm:
+            add_ln(self.model)
 
     def forward(self, x):
         x = self.dropout(self.model(x))
         return x
+
 
 # Definition for the LeNet model, suitable for MNIST by default
 class LeNet(nn.Module):
@@ -136,26 +154,27 @@ class AlexNet(nn.Module):
 # Definition for the ResNet18 model, suitable for ImageNet by default
 class ResNet18(nn.Module):
     def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=False,
-                 use_layer_norm=False):
+                 use_layer_norm=False, pretrained=False):
         super(ResNet18, self).__init__()
-        self.model = models.resnet18(pretrained=False)
+        weights = models.ResNet18_Weights.DEFAULT if pretrained else None
+        self.model = models.resnet18(weights=weights)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.dropout = nn.Dropout(dropout_rate)
 
+        # Check for conflicting normalization settings
+        if use_batch_norm and use_layer_norm:
+            raise ValueError("Batch normalization and layer normalization cannot both be true")
         # Replace first conv layer if not using 3 input channels
         if input_channels != 3:
             self.model.conv1 = nn.Conv2d(input_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
-        # Remove BatchNorm layers if not using batch norm
+        # Replace BatchNorm layers if not using batch normalization
         if not use_batch_norm:
-            def replace_bn(module):
-                for name, child in module.named_children():
-                    if isinstance(child, nn.BatchNorm2d):
-                        setattr(module, name, nn.Identity())
-                    else:
-                        replace_bn(child)
-
             replace_bn(self.model)
+
+        # Implement layer normalization if required
+        if use_layer_norm:
+            add_ln(self.model)
 
     def forward(self, x):
         x = self.dropout(self.model(x))
