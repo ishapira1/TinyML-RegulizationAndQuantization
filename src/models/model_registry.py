@@ -10,6 +10,50 @@ import torch.nn.functional as F
 from torchvision import models
 
 
+
+# Definition for the Inception-v3 model, suitable for ImageNet by default
+class InceptionV3(nn.Module):
+    def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False, pretrained=False):
+        super(InceptionV3, self).__init__()
+        self.model = models.inception_v3(pretrained=pretrained, aux_logits=False)
+        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
+        self.dropout = nn.Dropout(dropout_rate)
+
+        if input_channels != 3:
+            # Inception v3 expects (299, 299) sized images and 3 input channels,
+            # customizing input channels is non-trivial and not supported out-of-the-box.
+            raise ValueError("InceptionV3 requires 3 input channels")
+
+    def forward(self, x):
+        x = self.dropout(self.model(x))
+        return x
+
+# Definition for the ResNet50 model, suitable for ImageNet by default
+class ResNet50(nn.Module):
+    def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False,
+                 pretrained=False):
+        super(ResNet50, self).__init__()
+        self.model = models.resnet50(pretrained=pretrained)
+        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
+        self.dropout = nn.Dropout(dropout_rate)
+
+        if input_channels != 3:
+            self.model.conv1 = nn.Conv2d(input_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+
+        if not use_batch_norm:
+            def replace_bn(module):
+                for name, child in module.named_children():
+                    if isinstance(child, nn.BatchNorm2d):
+                        setattr(module, name, nn.Identity())
+                    else:
+                        replace_bn(child)
+
+            replace_bn(self.model)
+
+    def forward(self, x):
+        x = self.dropout(self.model(x))
+        return x
+
 # Definition for the LeNet model, suitable for MNIST by default
 class LeNet(nn.Module):
     def __init__(self, num_classes=10, input_channels=1, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False):
@@ -118,8 +162,8 @@ class ResNet18(nn.Module):
         return x
 
 
-def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_rate=0.5, use_batch_norm=False,
-                 use_layer_norm=False):
+# The create_model function now includes 'resnet50' and 'inceptionv3' cases and the 'pretrained' parameter.
+def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False, pretrained=False):
     if arch == 'lenet':
         model = LeNet(num_classes=10 if mini else num_classes,
                       input_channels=1,
@@ -137,7 +181,24 @@ def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_r
                          input_channels=3 if mini else input_channels,
                          dropout_rate=dropout_rate,
                          use_batch_norm=use_batch_norm,
-                         use_layer_norm=use_layer_norm)
+                         use_layer_norm=use_layer_norm,
+                         pretrained=pretrained)
+    elif arch == 'resnet50':
+        model = ResNet50(num_classes=1000 if mini else num_classes,
+                         input_channels=3 if mini else input_channels,
+                         dropout_rate=dropout_rate,
+                         use_batch_norm=use_batch_norm,
+                         use_layer_norm=use_layer_norm,
+                         pretrained=pretrained)
+    elif arch == 'inceptionv3':
+        if mini:
+            raise ValueError("InceptionV3 is not suitable for 'mini' datasets due to its input size requirement")
+        model = InceptionV3(num_classes=num_classes,
+                            input_channels=input_channels,
+                            dropout_rate=dropout_rate,
+                            use_batch_norm=use_batch_norm,
+                            use_layer_norm=use_layer_norm,
+                            pretrained=pretrained)
     else:
         raise ValueError(f"Unknown architecture '{arch}'")
     return model
@@ -156,3 +217,11 @@ if __name__ == "__main__":
     # Create a ResNet18 model instance for ImageNet
     resnet_model = create_model('resnet18')
     print(resnet_model)
+
+    # Example usage (Create a ResNet50 model instance for ImageNet)
+    resnet50_model = create_model('resnet50', pretrained=True)
+    print(resnet50_model)
+
+    # Example usage (Create an Inception-v3 model instance for ImageNet)
+    inceptionv3_model = create_model('inceptionv3', pretrained=True)
+    print(inceptionv3_model)
