@@ -32,7 +32,7 @@ class Trainer:
         self.regularization = regularization if regularization else {}
         self.verbose = verbose
 
-    def _compute_accuracy(self, dataloader):
+    def _compute_accuracy(self, dataloader):  # TODO go to eval
         """
         Compute the accuracy given the output of the model and the labels.
 
