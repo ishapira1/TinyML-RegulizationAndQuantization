@@ -1,0 +1,17 @@
+{
+    "runner_id": "itaishapira",
+    "model_name": "resnet18",
+    "dataset_name": "CIFAR-10",
+    "regularization": "none",
+    "regularization_param": null,
+    "train_loss": 0.2746876909065247,
+    "test_loss": 1.0932937984466553,
+    "train_accuracy": 90.968,
+    "test_accuracy": 69.09,
+    "timestamp": "2023-11-07_14-41-06",
+    "epochs": 10,
+    "lr": 0.001,
+    "device": "cpu",
+    "batch_size": 256,
+    "seed": 42
+}
