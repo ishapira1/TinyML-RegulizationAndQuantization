@@ -3,7 +3,7 @@
 import os
 import json
 import pandas as pd
-from logger import Logger, RESULTS_FILE_NAME_IN_LOGS, CHECKPOINT_FILE_NAME_IN_LOGS
+from src.logs.logger import Logger, RESULTS_FILE_NAME_IN_LOGS, CHECKPOINT_FILE_NAME_IN_LOGS
 from torch import load
 import torch
 from tqdm import tqdm
