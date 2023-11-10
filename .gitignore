@@ -1,2 +1,33 @@
-/models/*
-/datasets/*
+# Ignore macOS system files
+.DS_Store
+
+# Ignore all files in the `data` directory except the `MNIST` and `FashionMNIST` subdirectories
+data/*
+!data/MNIST/
+!data/FashionMNIST/
+
+# Since you've negated the directories above, now specify that within those,
+# you want to exclude everything but the files
+data/MNIST/*
+data/FashionMNIST/*
+
+# Ignore virtual environment directory
+.venv/
+
+# Ignore log files and directories
+logs/
+
+# Ignore binary Python files
+*.pyc
+
+# Ignore all .egg-info directories
+*.egg-info
+
+# Ignore IDE settings directory
+.idea/
+
+# Ignore other unnecessary files in an ML context
+# Add patterns for model checkpoints, temporary files, etc. as needed.
+# For example:
+*.checkpoint
+*.log
