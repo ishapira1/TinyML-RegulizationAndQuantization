@@ -15,7 +15,6 @@ data/FashionMNIST/*
 .venv/
 
 # Ignore log files and directories
-logs/
 
 # Ignore binary Python files
 *.pyc
