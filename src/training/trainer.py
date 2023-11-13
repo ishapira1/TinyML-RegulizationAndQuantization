@@ -42,6 +42,7 @@ class Trainer:
         """
         correct = 0
         total = 0
+        self.model.eval()  # Set the model to evaluation mode
         with torch.no_grad():
             for inputs, labels in dataloader:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
