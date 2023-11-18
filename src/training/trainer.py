@@ -32,6 +32,15 @@ class Trainer:
         self.regularization = regularization if regularization else {}
         self.verbose = verbose
 
+        # after training
+        self.train_loss = 0.0
+        self.test_loss = 0.0
+        self.train_accuracy = 0.0
+        self.test_accuracy = 0.0
+        self.epoch_train_losses = []
+        self.epoch_test_losses = []
+
+
     def _compute_accuracy(self, dataloader):  # TODO go to eval
         """
         Compute the accuracy given the output of the model and the labels.
@@ -72,13 +81,14 @@ class Trainer:
     def train(self, num_epochs):
         """
         Train the model for a specified number of epochs and return the model
-        along with the final train and test loss.
+        along with the train and test losses and accuracies for each epoch.
 
         :param num_epochs: The number of epochs to train the model.
-        :return: tuple containing the trained model, final train loss, and final test loss.
+        :return: Tuple containing the train loss, test loss, train accuracy, test accuracy, and lists of train and test losses per epoch.
         """
-        train_loss = 0.0
-        test_loss = 0.0
+        epoch_train_losses = []  # List to store train loss after each epoch
+        epoch_test_losses = []  # List to store test loss after each epoch
+
         for epoch in tqdm(range(num_epochs), desc='Epochs'):
             self.model.train()
             running_loss = 0.0
@@ -96,10 +106,10 @@ class Trainer:
                 # Apply L-infinity regularization directly to the parameters
                 if 'linf' in self.regularization:
                     for param in self.model.parameters():
-                        param.data = torch.clamp(param.data, min=-self.regularization['linf'], max=self.regularization['linf'])
+                        param.data = torch.clamp(param.data, min=-self.regularization['linf'],
+                                                 max=self.regularization['linf'])
 
                 running_loss += loss.item() * inputs.size(0)
-
 
             # Evaluation phase
             self.model.eval()
@@ -117,15 +127,31 @@ class Trainer:
                     loss = self.criterion(outputs, labels)
                     train_running_loss += loss.item() * inputs.size(0)
 
-            test_loss = test_running_loss / len(self.dataloaders['test'].dataset)
+            # Calculate average losses for the current epoch
             train_loss = train_running_loss / len(self.dataloaders['train'].dataset)
+            test_loss = test_running_loss / len(self.dataloaders['test'].dataset)
+
+            # Append average losses to the lists
+            epoch_train_losses.append(train_loss)
+            epoch_test_losses.append(test_loss)
 
             if self.verbose:
                 tqdm.write(f'Epoch {epoch + 1}/{num_epochs} - Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}')
 
+        # Calculate accuracies after all epochs
         train_accuracy = self._compute_accuracy(self.dataloaders['train'])
         test_accuracy = self._compute_accuracy(self.dataloaders['test'])
-        return train_loss, test_loss,train_accuracy, test_accuracy
+
+        # save:
+        self.train_loss = train_loss
+        self.test_loss = test_loss
+        self.train_accuracy = train_accuracy
+        self.test_accuracy = test_accuracy
+        self.epoch_train_losses = epoch_train_losses
+        self.epoch_test_losses = epoch_test_losses
+
+        # Return the final losses, accuracies, and lists of losses per epoch
+        return train_loss, test_loss, train_accuracy, test_accuracy, epoch_train_losses, epoch_test_losses
 
 
 def main():

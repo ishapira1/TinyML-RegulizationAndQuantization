@@ -58,9 +58,11 @@ def run_experiments(device, pretrained=False, num_classes=10):
 
                         model.to(device)
 
-                        train_loss, test_loss, train_accuracy, test_accuracy = train_model(model, dataset_name, reg_name=reg_name, reg_param=param, device=device, batch_size=batch_size, num_epochs=epochs,
+                        train_loss, test_loss, train_accuracy, test_accuracy, epoch_train_losses, epoch_test_losses = train_model(model, dataset_name, reg_name=reg_name, reg_param=param, device=device, batch_size=batch_size, num_epochs=epochs,
                                     lr=lr, verbose=True)
-                        logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                        logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, epochs=epochs, lr=lr,
+                                   device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained,
+                                   epoch_train_losses=epoch_train_losses,epoch_test_losses=epoch_test_losses)
                 else:  # Regularizations without parameters
                     # Set flags for batch_norm and layer_norm based on reg_name
                     use_batch_norm = reg_name == 'batch_norm'
@@ -70,8 +72,10 @@ def run_experiments(device, pretrained=False, num_classes=10):
                                  use_batch_norm=use_batch_norm,
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
                     model.to(device)
-                    train_loss, test_loss, train_accuracy, test_accuracy = train_model(model, dataset_name, device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
-                    logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                    train_loss, test_loss, train_accuracy, test_accuracy, epoch_train_losses, epoch_test_losses = train_model(model, dataset_name, device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
+                    logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy,
+                               test_accuracy, epochs=epochs, lr=lr, device=str(device), batch_size=batch_size, seed=seed,
+                               pretrained=pretrained, epoch_train_losses=epoch_train_losses,epoch_test_losses=epoch_test_losses)
 
 
 
