@@ -28,6 +28,10 @@ class Trainer:
         self.dataloaders = dataloaders
         self.criterion = criterion
         self.optimizer = optimizer
+
+        self.criterion_name = self.criterion.__class__.__name__
+        self.optimizer_name = self.optimizer.__class__.__name__
+
         self.device = device
         self.regularization = regularization if regularization else {}
         self.verbose = verbose
@@ -39,6 +43,7 @@ class Trainer:
         self.test_accuracy = 0.0
         self.epoch_train_losses = []
         self.epoch_test_losses = []
+        self.iterations = 0.0
 
 
     def _compute_accuracy(self, dataloader):  # TODO go to eval
@@ -149,6 +154,8 @@ class Trainer:
         self.test_accuracy = test_accuracy
         self.epoch_train_losses = epoch_train_losses
         self.epoch_test_losses = epoch_test_losses
+        self.iterations = len(self.dataloaders['train']) * num_epochs
+
 
         # Return the final losses, accuracies, and lists of losses per epoch
         return train_loss, test_loss, train_accuracy, test_accuracy, epoch_train_losses, epoch_test_losses

@@ -1,7 +1,6 @@
 import os
 import json
 import datetime
-import torch
 from torch import save
 import os
 import getpass
@@ -9,6 +8,18 @@ import glob
 
 RESULTS_FILE_NAME_IN_LOGS = 'results.json'
 CHECKPOINT_FILE_NAME_IN_LOGS = 'model_checkpoint.pth'
+
+from src.training.trainer import Trainer
+
+def is_json_serializable(value):
+    try:
+        json.dumps(value)
+        return True
+    except (TypeError, OverflowError):
+        return False
+
+def get_attributes(trainer_instance):
+    return {attr: value for attr, value in vars(trainer_instance).items() if is_json_serializable(value)}
 
 class Logger:
     def __init__(self, log_dir="logs"):
@@ -32,7 +43,7 @@ class Logger:
             experiments.append(os.path.join(filename, CHECKPOINT_FILE_NAME_IN_LOGS))
         return experiments
 
-    def log(self, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
+    def log(self, model, trainer, model_name, dataset_name, reg_name, param, **kwargs):
         # Create a unique identifier for the experiment based on the current timestamp
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         user = getpass.getuser()
@@ -47,13 +58,12 @@ class Logger:
             'dataset_name':dataset_name,
             'regularization': reg_name,
             'regularization_param': param,
-            'train_loss': train_loss,
-            'test_loss': test_loss,
-            'train_accuracy': train_accuracy,
-            'test_accuracy': test_accuracy,
             'timestamp': timestamp,
             'quantization_method': None,
         }
+
+        print(get_attributes(trainer))
+        params_and_results.update(get_attributes(trainer))
 
         # Update the dictionary with any additional keyword arguments
         params_and_results.update(kwargs)
