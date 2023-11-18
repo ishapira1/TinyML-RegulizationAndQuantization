@@ -100,6 +100,7 @@ if __name__ == '__main__':
         # Define which models are compatible with which datasets
         # 'CIFAR-10': ['lenet'],
         'MNIST': ['lenet'],
+        'FASHIONMNIST': ['lenet'],
         # etc.
     }
     REGULARIZATIONS = {
@@ -108,12 +109,12 @@ if __name__ == '__main__':
         'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
         #'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
         #'l1': [0.1, 0.01, 0.001, 0.0001],  # Different L1 regularization strengths
-        'l2': [0.1],  # Different L2 regularization strengths
+        'l2': [0.1, 0.01, 0.001, 0.0001],  # Different L2 regularization strengths
         #'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
     }
 
     QUANTIZATION_METHODS = {
-        # 'dynamic_quantization',
+        'dynamic_quantization',
         'static_quantization'
     }
 

@@ -9,7 +9,7 @@
     "test_loss": 0.03711461560777388,
     "train_accuracy": 99.04333333333334,
     "test_accuracy": 98.74,
-    "timestamp": "2023-11-09_20-04-56",
+    "timestamp": "2023-11-18_11-30-34",
     "lr": 0.001,
     "device": "cpu",
     "batch_size": 256,
