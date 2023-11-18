@@ -34,17 +34,37 @@ def calculate_weight_statistics(checkpoint_path):
     :return: A dictionary with total number of weights, L1 norm, L2 norm, max and min weight values, and model size in MB.
     """
     state_dict = load(checkpoint_path, map_location=torch.device('cpu'))
-    # Filter out non-floating point parameters
-    float_params = [param for param in state_dict.values() if torch.is_floating_point(param)]
 
-    total_weights = sum(param.numel() for param in float_params)
-    l1_norm = sum(torch.norm(param, 1).item() for param in float_params)
-    l2_norm = sum(torch.norm(param, 2).item() for param in float_params)
-    max_weight = max(param.max().item() for param in float_params)
-    min_weight = min(param.min().item() for param in float_params)
+    # Filter out parameters by dtype, accounting for quantized values as well.
+    float_params = []
+    quantized_params = []
+    for key in state_dict:
+        ## FIXME I think i can make this flexibly handle qint8, qint16, and qunit8, also, not sure if all quantized models will have a "dtype" flag I can use to check for quantization...
+        if key.split(".")[-1] == "dtype": ## for quantized models, the dtype is stored in in the state dict
+            if state_dict[key] == torch.qint8:
+                param = state_dict[".".join(key.split(".")[:-1] + ["_packed_params"])]
+                quantized_params.append(param[0]) # weights
+                quantized_params.append(param[0]) ## bias
+            else:
+                print("Unsupported dtype present in quantized model: {}".format(state_dict[key]))
+        elif key.split(".")[-1] == "_packed_params":
+            continue
+        else:
+            value = state_dict[key]
+            if torch.is_floating_point(value):
+                float_params.append(value)
+
+    total_params_float_precision = float_params + [torch.dequantize(param) for param in quantized_params]
+
+    total_weights = sum(param.numel() for param in total_params_float_precision)
+    l1_norm = sum(torch.norm(param, 1).item() for param in total_params_float_precision)
+    l2_norm = sum(torch.norm(param, 2).item() for param in total_params_float_precision)
+    max_weight = max(param.max().item() for param in total_params_float_precision)
+    min_weight = min(param.min().item() for param in total_params_float_precision)
 
     # Calculate model size in bytes and convert to megabytes
     total_size_bytes = sum(param.nelement() * param.element_size() for param in float_params)
+    total_size_bytes += sum(param.nelement() * torch.int_repr(param).element_size() for param in quantized_params)
     total_size_mb = total_size_bytes / (1024 ** 2)
 
     return {
@@ -82,6 +102,24 @@ def parser():
                     record = json.load(f)
                     record.update(weight_stats)
                     all_records.append(record)
+
+        # load quantization models
+        if os.path.isdir(exp_dir):
+            for quantization_method in os.listdir(exp_dir):
+                quantization_dir = os.path.join(exp_dir, quantization_method)
+                results_file = os.path.join(quantization_dir, RESULTS_FILE_NAME_IN_LOGS)
+                checkpoint_path = os.path.join(quantization_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
+
+                if os.path.isfile(checkpoint_path):
+                    weight_stats = calculate_weight_statistics(checkpoint_path)
+
+                    # Check if the results file exists
+                    if os.path.isfile(results_file):
+                        # Open the results file and load the JSON data
+                        with open(results_file, 'r') as f:
+                            record = json.load(f)
+                            record.update(weight_stats)
+                            all_records.append(record)
 
     # Create a DataFrame from the records
     df = pd.DataFrame(all_records)

@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+import torch
 from torch import save
 import os
 import getpass
@@ -8,7 +9,6 @@ import glob
 
 RESULTS_FILE_NAME_IN_LOGS = 'results.json'
 CHECKPOINT_FILE_NAME_IN_LOGS = 'model_checkpoint.pth'
-
 
 class Logger:
     def __init__(self, log_dir="logs"):
@@ -51,7 +51,8 @@ class Logger:
             'test_loss': test_loss,
             'train_accuracy': train_accuracy,
             'test_accuracy': test_accuracy,
-            'timestamp': timestamp
+            'timestamp': timestamp,
+            'quantization_method': None,
         }
 
         # Update the dictionary with any additional keyword arguments
@@ -68,10 +69,12 @@ class Logger:
         exp_dir = os.path.split(checkpoint_path)[0]
 
         sub_dir = os.path.join(exp_dir, quantization_method)
-        os.makedirs(sub_dir)
+        if not os.path.exists(sub_dir):
+            os.makedirs(sub_dir)
 
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         user = getpass.getuser()
+        # model_size = 
 
         params_and_results = {
             'runner_id':user,
