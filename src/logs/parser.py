@@ -26,25 +26,30 @@ def get_model_size_in_mb(model):
     return total_size_mb
 
 
+
 def calculate_weight_statistics(checkpoint_path):
     """
-    Calculate the statistics of the weights from the model checkpoint.
+    Calculate the statistics of the weights from the model checkpoint, including the total number
+    of trainable parameters.
 
     :param checkpoint_path: Path to the model checkpoint file.
-    :return: A dictionary with total number of weights, L1 norm, L2 norm, max and min weight values, and model size in MB.
+    :return: A dictionary with total number of weights, number of trainable parameters,
+             L1 norm, L2 norm, max and min weight values, and model size in MB.
     """
     state_dict = load(checkpoint_path, map_location=torch.device('cpu'))
 
     # Filter out parameters by dtype, accounting for quantized values as well.
     float_params = []
     quantized_params = []
+    trainable_params = []
     for key in state_dict:
-        ## FIXME I think i can make this flexibly handle qint8, qint16, and qunit8, also, not sure if all quantized models will have a "dtype" flag I can use to check for quantization...
-        if key.split(".")[-1] == "dtype": ## for quantized models, the dtype is stored in in the state dict
+        # FIXME: I think I can make this flexibly handle qint8, qint16, and quint8, also,
+        # not sure if all quantized models will have a "dtype" flag I can use to check for quantization...
+        if key.split(".")[-1] == "dtype": # for quantized models, the dtype is stored in the state dict
             if state_dict[key] == torch.qint8:
                 param = state_dict[".".join(key.split(".")[:-1] + ["_packed_params"])]
                 quantized_params.append(param[0]) # weights
-                quantized_params.append(param[0]) ## bias
+                quantized_params.append(param[0]) # bias
             else:
                 print("Unsupported dtype present in quantized model: {}".format(state_dict[key]))
         elif key.split(".")[-1] == "_packed_params":
@@ -53,10 +58,13 @@ def calculate_weight_statistics(checkpoint_path):
             value = state_dict[key]
             if torch.is_floating_point(value):
                 float_params.append(value)
+                if value.requires_grad:
+                    trainable_params.append(value)
 
     total_params_float_precision = float_params + [torch.dequantize(param) for param in quantized_params]
 
     total_weights = sum(param.numel() for param in total_params_float_precision)
+    total_trainable_weights = sum(param.numel() for param in trainable_params)
     l1_norm = sum(torch.norm(param, 1).item() for param in total_params_float_precision)
     l2_norm = sum(torch.norm(param, 2).item() for param in total_params_float_precision)
     max_weight = max(param.max().item() for param in total_params_float_precision)
@@ -69,12 +77,17 @@ def calculate_weight_statistics(checkpoint_path):
 
     return {
         'total_weights': total_weights,
+        'total_trainable_weights': total_trainable_weights,
         'l1_norm': l1_norm,
         'l2_norm': l2_norm,
         'max_weight': max_weight,
         'min_weight': min_weight,
         'model_size_mb': total_size_mb
     }
+
+
+
+
 
 
 def parser():
@@ -123,6 +136,13 @@ def parser():
 
     # Create a DataFrame from the records
     df = pd.DataFrame(all_records)
+
+    # Merge 'num_epochs' and 'epochs' columns
+    # Use 'epochs' values where 'num_epochs' is missing
+    df['num_epochs'] = df['num_epochs'].fillna(df['epochs'])
+
+    # Remove the 'epochs' column from the DataFrame
+    df = df.drop(columns=['epochs'])
 
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     # Save the DataFrame to a CSV file
