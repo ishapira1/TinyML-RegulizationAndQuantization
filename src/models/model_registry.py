@@ -196,7 +196,7 @@ def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_r
                         use_batch_norm=use_batch_norm,
                         use_layer_norm=use_layer_norm)
     elif arch == 'resnet18':
-        model = ResNet18(num_classes=1000 if mini else num_classes,
+        model = ResNet18(num_classes=10 if mini else num_classes,
                          input_channels=3 if mini else input_channels,
                          dropout_rate=dropout_rate,
                          use_batch_norm=use_batch_norm,

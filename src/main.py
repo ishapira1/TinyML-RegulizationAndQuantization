@@ -5,6 +5,10 @@ from src.training.trainer import Trainer
 from src.logs.logger import Logger
 from tqdm import tqdm
 from torch.optim import Adam
+# import warnings
+# from urllib3.exceptions import InsecureRequestWarning
+#
+# warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
 def set_seed(seed):
     """
@@ -33,7 +37,7 @@ def train_model(model, dataset, device, batch_size=128, num_epochs=50, lr=0.001,
 
 
 
-def run_experiments(device, pretrained=False):
+def run_experiments(device, pretrained=False, num_classes=10):
     """
     Run experiments across different datasets, models, and regularizations.
     """
@@ -48,7 +52,7 @@ def run_experiments(device, pretrained=False):
                     for param in tqdm(reg_params, desc='Params', leave=False):
                         dropout_rate = param if reg_name == 'dropout' else 0
 
-                        model = create_model(model_name, mini=False, dropout_rate=dropout_rate,
+                        model = create_model(model_name,num_classes=num_classes, mini=False, dropout_rate=dropout_rate,
                                      use_batch_norm=False,
                                      use_layer_norm=False, pretrained=pretrained)
 
@@ -78,27 +82,46 @@ if __name__ == '__main__':
     seed = 42
     set_seed(seed)
 
-    # Define your epochs, learning rate, dataset names, model names, and regularizations here
-    epochs = 10
-    batch_size = 256
-    lr = 0.001
-    DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
+    # # Define your epochs, learning rate, dataset names, model names, and regularizations here
+    # epochs = 10
+    # batch_size = 256
+    # lr = 0.001
+    # DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
+    # MODELS = ['resnet18']# 'alexnet', 'resnet18']
+    # COMPATIBLE_MODELS = {
+    #     # Define which models are compatible with which datasets
+    #     #'CIFAR-10': ['lenet', 'resnet18'],
+    #     'CIFAR-10': ['resnet18'],
+    #     # etc.
+    # }
+
+
+    # imagenet pretrained:
+    epochs = 100
+    batch_size = 128
+    lr = 0.1
+    DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
     MODELS = ['resnet18']# 'alexnet', 'resnet18']
+    pretrained = True
     COMPATIBLE_MODELS = {
         # Define which models are compatible with which datasets
-        #'CIFAR-10': ['lenet', 'resnet18'],
         'CIFAR-10': ['resnet18'],
+       # 'ImageNet': ['resnet50'],
         # etc.
+
     }
+
+
+
     REGULARIZATIONS = {
-        #'none': None,  # No regularization parameters needed for baseline
+        'none': None,  # No regularization parameters needed for baseline
         #'batch_norm': None,  # Batch normalization typically does not require explicit parameters
-        'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
+        #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
         'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-        'l1': [0.1, 0.01, 0.001, 0.0001],  # Different L1 regularization strengths
-        'l2': [0.1, 0.01, 0.001, 0.0001],  # Different L2 regularization strengths
+        'l1': [0.1, 0.01, 0.001, 0.0001, 0.0005],  # Different L1 regularization strengths
+        'l2': [0.1, 0.01, 0.001, 0.0001, 0.0005],  # Different L2 regularization strengths
         'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
     }
 
     logger = Logger()
-    run_experiments(device, pretrained = False)
+    run_experiments(device, pretrained = False, num_classes=10)
