@@ -124,7 +124,7 @@ if __name__ == '__main__':
         #'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
         'l1': [0.0002,0.0003,0.0004,0.0006,0.0007,0.0008,0.0009],  # Different L1 regularization strengths
         'l2': [0.0002,0.0003,0.0004,0.0006,0.0007,0.0008,0.0009,0.003],  # Different L2 regularization strengths
-        'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
+        'l_infinty': [0.1, 0.01, 1,10,100]  # Different L-infinity regularization strengths
     }
 
     logger = Logger()
