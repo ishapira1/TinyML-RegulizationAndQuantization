@@ -33,7 +33,8 @@ def train_model(model, dataset, device, batch_size=128, num_epochs=50, lr=0.001,
     optimizer = Adam(model.parameters(), lr=lr)
     regularization = {} if not reg_name else {reg_name:reg_param}
     trainer = Trainer(model, dataloaders, criterion = torch.nn.CrossEntropyLoss(), optimizer=optimizer, device=device, regularization=regularization, verbose=verbose)
-    return trainer.train(num_epochs)
+    trainer.train(num_epochs)
+    return trainer
 
 
 
@@ -58,9 +59,10 @@ def run_experiments(device, pretrained=False, num_classes=10):
 
                         model.to(device)
 
-                        train_loss, test_loss, train_accuracy, test_accuracy = train_model(model, dataset_name, reg_name=reg_name, reg_param=param, device=device, batch_size=batch_size, num_epochs=epochs,
+                        trainer = train_model(model, dataset_name, reg_name=reg_name, reg_param=param, device=device, batch_size=batch_size, num_epochs=epochs,
                                     lr=lr, verbose=True)
-                        logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                        logger.log(model, trainer, model_name, dataset_name, reg_name, param,
+                                   lr = lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained, num_epochs=epochs)
                 else:  # Regularizations without parameters
                     # Set flags for batch_norm and layer_norm based on reg_name
                     use_batch_norm = reg_name == 'batch_norm'
@@ -70,8 +72,10 @@ def run_experiments(device, pretrained=False, num_classes=10):
                                  use_batch_norm=use_batch_norm,
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
                     model.to(device)
-                    train_loss, test_loss, train_accuracy, test_accuracy = train_model(model, dataset_name, device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
-                    logger.log(model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, epochs=epochs, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                    trainer = train_model(model, dataset_name, device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
+                    logger.log(model, trainer, model_name, dataset_name, reg_name, None,
+                               lr=lr, device=str(device), batch_size=batch_size, seed=seed,
+                               pretrained=pretrained, num_epochs=epochs)
 
 
 
@@ -97,15 +101,15 @@ if __name__ == '__main__':
 
 
     # imagenet pretrained:
-    epochs = 20
+    epochs = 1
     batch_size = 256
     lr = 0.001
     DATASETS = ['MNIST'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
-    MODELS = ['LaNet']# 'alexnet', 'resnet18']
+    MODELS = ['lenet']# 'alexnet', 'resnet18']
     pretrained = True
     COMPATIBLE_MODELS = {
         # Define which models are compatible with which datasets
-        'MNIST': ['LaNet'],
+        'MNIST': ['lenet'],
        # 'ImageNet': ['resnet50'],
         # etc.
 
@@ -120,7 +124,7 @@ if __name__ == '__main__':
         #'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
         'l1': [0.0002,0.0003,0.0004,0.0006,0.0007,0.0008,0.0009],  # Different L1 regularization strengths
         'l2': [0.0002,0.0003,0.0004,0.0006,0.0007,0.0008,0.0009,0.003],  # Different L2 regularization strengths
-        #'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
+        'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
     }
 
     logger = Logger()

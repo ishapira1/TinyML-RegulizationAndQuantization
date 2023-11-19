@@ -62,7 +62,6 @@ class Logger:
             'quantization_method': None,
         }
 
-        print(get_attributes(trainer))
         params_and_results.update(get_attributes(trainer))
 
         # Update the dictionary with any additional keyword arguments

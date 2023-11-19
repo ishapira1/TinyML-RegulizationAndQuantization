@@ -79,6 +79,12 @@ class Trainer:
         elif 'l2' in self.regularization:
             l2_reg = sum(param.pow(2.0).sum() for param in self.model.parameters())
             loss = loss + self.regularization['l2'] * l2_reg
+        # Apply L-infinity regularization directly to the parameters
+
+        elif 'linf' in self.regularization:
+            # apply for every layer
+            for param in self.model.parameters():
+                loss += self.regularization['linf'] * torch.max(torch.abs(param.data))
         return loss
 
     from tqdm import tqdm
@@ -107,13 +113,6 @@ class Trainer:
                 loss = self._apply_regularization(loss)
                 loss.backward()
                 self.optimizer.step()
-
-                # Apply L-infinity regularization directly to the parameters
-                if 'linf' in self.regularization:
-                    for param in self.model.parameters():
-                        param.data = torch.clamp(param.data, min=-self.regularization['linf'],
-                                                 max=self.regularization['linf'])
-
                 running_loss += loss.item() * inputs.size(0)
 
             # Evaluation phase
