@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
 
     # imagenet pretrained:
-    epochs = 1
+    epochs = 20
     batch_size = 256
     lr = 0.001
     DATASETS = ['MNIST'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
