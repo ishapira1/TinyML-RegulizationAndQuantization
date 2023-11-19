@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 
 class Trainer:
-    def __init__(self, model, dataloaders, criterion, optimizer, device, regularization=None, verbose=True):
+    def __init__(self, model, dataloaders, criterion, optimizer, device, regularization=None, verbose=True, lr_scheduler=None):
         """
         Initialize the Trainer.
 
@@ -31,10 +31,13 @@ class Trainer:
 
         self.criterion_name = self.criterion.__class__.__name__
         self.optimizer_name = self.optimizer.__class__.__name__
+        self.lr_scheduler = lr_scheduler
+
 
         self.device = device
         self.regularization = regularization if regularization else {}
         self.verbose = verbose
+
 
         # after training
         self.train_loss = 0.0
@@ -138,6 +141,9 @@ class Trainer:
             # Append average losses to the lists
             epoch_train_losses.append(train_loss)
             epoch_test_losses.append(test_loss)
+
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
 
             if self.verbose:
                 tqdm.write(f'Epoch {epoch + 1}/{num_epochs} - Train Loss: {train_loss:.4f}, Test Loss: {test_loss:.4f}')
