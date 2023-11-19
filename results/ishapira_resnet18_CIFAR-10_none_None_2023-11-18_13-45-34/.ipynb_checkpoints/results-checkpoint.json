@@ -1,0 +1,18 @@
+{
+    "runner_id": "ishapira",
+    "model_name": "resnet18",
+    "dataset_name": "CIFAR-10",
+    "regularization": "none",
+    "regularization_param": null,
+    "train_loss": 0.07689098008155823,
+    "test_loss": 1.5548721128463745,
+    "train_accuracy": 97.512,
+    "test_accuracy": 70.28,
+    "timestamp": "2023-11-18_13-45-34",
+    "epochs": 20,
+    "lr": 0.001,
+    "device": "cuda:0",
+    "batch_size": 256,
+    "seed": 42,
+    "pretrained": false
+}
