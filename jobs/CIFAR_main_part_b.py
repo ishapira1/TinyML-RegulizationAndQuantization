@@ -71,7 +71,7 @@ def run_experiments(device, pretrained=False, num_classes=10):
                     use_batch_norm = reg_name == 'batch_norm'
                     use_layer_norm = reg_name == 'layer_norm'
 
-                    model = create_model(model_name, mini=False, dropout_rate=0,
+                    model = create_model(model_name,num_classes, mini=False, dropout_rate=0,
                                  use_batch_norm=use_batch_norm,
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
                     model.to(device)
