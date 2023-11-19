@@ -64,7 +64,6 @@ def calculate_weight_statistics(checkpoint_path):
     total_params_float_precision = float_params + [torch.dequantize(param) for param in quantized_params]
 
     total_weights = sum(param.numel() for param in total_params_float_precision)
-    total_trainable_weights = sum(param.numel() for param in trainable_params)
     l1_norm = sum(torch.norm(param, 1).item() for param in total_params_float_precision)
     l2_norm = sum(torch.norm(param, 2).item() for param in total_params_float_precision)
     max_weight = max(param.max().item() for param in total_params_float_precision)
@@ -77,7 +76,6 @@ def calculate_weight_statistics(checkpoint_path):
 
     return {
         'total_weights': total_weights,
-        'total_trainable_weights': total_trainable_weights,
         'l1_norm': l1_norm,
         'l2_norm': l2_norm,
         'max_weight': max_weight,
@@ -87,7 +85,22 @@ def calculate_weight_statistics(checkpoint_path):
 
 
 
+def my_eval(x):
+    try:
+        return eval(x)
+    except:
+        return x
 
+def extract_key_if_dict(value):
+    if isinstance(value, dict):
+        # Extract and return the first key from the dictionary
+        try:
+            return next(iter(value))
+        except:
+            return 'none'
+    else:
+        # Return the value as is if it's not a dictionary
+        return value
 
 
 def parser():
@@ -143,12 +156,14 @@ def parser():
 
     # Remove the 'epochs' column from the DataFrame
     df = df.drop(columns=['epochs'])
+    df['regularization'] = df['regularization'].apply(extract_key_if_dict)
 
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     # Save the DataFrame to a CSV file
     csv_file = os.path.join(logger.log_dir, f'all_results_{timestamp}.csv')
 
     df.to_csv(csv_file, index=False)
+    return df
 
 # To run the parser function when the script is executed
 if __name__ == '__main__':
