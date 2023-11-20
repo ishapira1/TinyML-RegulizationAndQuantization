@@ -11,6 +11,8 @@ from torchvision import models
 
 from src.models.normalization_utils import replace_bn, add_ln
 
+
+
 # Definition for the Inception-v3 model, suitable for ImageNet by default
 class InceptionV3(nn.Module):
     def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False, pretrained=False):
@@ -184,26 +186,26 @@ class ResNet18(nn.Module):
 # The create_model function now includes 'resnet50' and 'inceptionv3' cases and the 'pretrained' parameter.
 def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False, pretrained=False):
     if arch == 'lenet':
-        model = LeNet(num_classes=10 if mini else num_classes,
+        model = LeNet(num_classes=num_classes if mini else num_classes,
                       input_channels=1,
                       dropout_rate=dropout_rate,
                       use_batch_norm=use_batch_norm,
                       use_layer_norm=use_layer_norm)
     elif arch == 'alexnet':
-        model = AlexNet(num_classes=10 if mini else num_classes,
+        model = AlexNet(num_classes=num_classes if mini else num_classes,
                         input_channels=3 if mini else input_channels,
                         dropout_rate=dropout_rate,
                         use_batch_norm=use_batch_norm,
                         use_layer_norm=use_layer_norm)
     elif arch == 'resnet18':
-        model = ResNet18(num_classes=10 if mini else num_classes,
+        model = ResNet18(num_classes=num_classes if mini else num_classes,
                          input_channels=3 if mini else input_channels,
                          dropout_rate=dropout_rate,
                          use_batch_norm=use_batch_norm,
                          use_layer_norm=use_layer_norm,
                          pretrained=pretrained)
     elif arch == 'resnet50':
-        model = ResNet50(num_classes=1000 if mini else num_classes,
+        model = ResNet50(num_classes=num_classes if mini else num_classes,
                          input_channels=3 if mini else input_channels,
                          dropout_rate=dropout_rate,
                          use_batch_norm=use_batch_norm,

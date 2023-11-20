@@ -106,8 +106,8 @@ if __name__ == '__main__':
 
     # imagenet pretrained:
     epochs = 150
-    batch_size = 256
-    lr = 0.01
+    batch_size = 128
+    lr = 0.001
     DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
     MODELS = ['resnet18']# 'alexnet', 'resnet18']
     pretrained = True
