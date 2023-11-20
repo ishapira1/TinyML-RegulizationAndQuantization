@@ -8,6 +8,12 @@ from tqdm import tqdm
 from torch.optim import Adam
 import os
 
+QUANTIZATION_METHODS = {
+    'dynamic_quantization',
+    'static_quantization'
+}
+
+
 def set_seed(seed):
     """
     Set the seed for reproducibility.
@@ -30,7 +36,7 @@ def quantize_model(model, dataset, device,  quantization_method=None, batch_size
 
     return quantizer.quantize()
 
-def run_experiments(device, pretrained=False):
+def run_experiments(device, num_classes=10, pretrained=False):
     """
     Run experiments across different datasets, models, and regularizations.
     """
@@ -40,6 +46,7 @@ def run_experiments(device, pretrained=False):
                 # Compatibility check
                 if model_name not in COMPATIBLE_MODELS[dataset_name]:
                     continue
+                print(model_name)
 
                 for reg_name, reg_params in tqdm(REGULARIZATIONS.items(), desc='Regularizations', leave=False):
                     if reg_params:  # Regularizations with parameters
@@ -49,7 +56,7 @@ def run_experiments(device, pretrained=False):
                                 dropout_rate = param if reg_name == 'dropout' else 0
 
 
-                                model = create_model(model_name, mini=False, dropout_rate=dropout_rate,
+                                model = create_model(model_name, num_classes=num_classes,mini=False, dropout_rate=dropout_rate,
                                             use_batch_norm=False,
                                             use_layer_norm=False)
                                 
@@ -70,11 +77,12 @@ def run_experiments(device, pretrained=False):
                             use_batch_norm = reg_name == 'batch_norm'
                             use_layer_norm = reg_name == 'layer_norm'
 
-                            model = create_model(model_name, mini=False, dropout_rate=0,
+                            model = create_model(model_name, mini=False, dropout_rate=0,num_classes=num_classes,
                                         use_batch_norm=use_batch_norm,
                                         use_layer_norm=use_layer_norm)
                             
                             state_dict = torch.load(checkpoint_path)
+                            print(checkpoint_path)
                             model.load_state_dict(state_dict)
 
                             model.to(device)
@@ -84,7 +92,6 @@ def run_experiments(device, pretrained=False):
                             logger.append_log(quantized_checkpoint_path, quantization_method, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
 
 if __name__ == '__main__':
-    # Check for CUDA
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"device is {device}")
     seed = 42
@@ -100,23 +107,52 @@ if __name__ == '__main__':
         # Define which models are compatible with which datasets
         # 'CIFAR-10': ['lenet'],
         'MNIST': ['lenet'],
-        'FASHIONMNIST': ['lenet'],
+        # 'FASHIONMNIST': ['lenet'],
+        #'CIFAR-10': ['resnet18']
         # etc.
     }
     REGULARIZATIONS = {
         'none': None,  # No regularization parameters needed for baseline
         'batch_norm': None,  # Batch normalization typically does not require explicit parameters
-        'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
-        #'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-        #'l1': [0.1, 0.01, 0.001, 0.0001],  # Different L1 regularization strengths
-        'l2': [0.1, 0.01, 0.001, 0.0001],  # Different L2 regularization strengths
-        #'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
+        #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
+        'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
+        'l1':[
+    0.0001,
+    0.0005,
+    0.001,
+    0.005,
+    0.01,
+    0.0002,
+    0.0003,
+    0.0004,
+    0.0006,
+    0.0007,
+    0.0008,
+    0.0009,
+],
+        'l2':[
+    0.05,
+    0.0001,
+    0.0005,
+    0.001,
+    0.005,
+    0.01,
+    0.0002,
+    0.0003,
+    0.0004,
+    0.0006,
+    0.0007,
+    0.0008,
+    0.0009,
+    0.003
+],
+        'l_infinty': [0.001, 0.01 , 0.1  ]  # Different L-infinity regularization strengths
     }
 
     QUANTIZATION_METHODS = {
         'dynamic_quantization',
         'static_quantization'
     }
-
+    #
     logger = Logger()
     run_experiments(device, pretrained=False)
