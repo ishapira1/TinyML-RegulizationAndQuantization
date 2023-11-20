@@ -127,7 +127,9 @@ def parser():
                 with open(results_file, 'r') as f:
                     record = json.load(f)
                     record.update(weight_stats)
+                    record['path'] = exp_dir
                     all_records.append(record)
+
 
         # load quantization models
         if os.path.isdir(exp_dir):
@@ -145,6 +147,7 @@ def parser():
                         with open(results_file, 'r') as f:
                             record = json.load(f)
                             record.update(weight_stats)
+                            record['path'] = exp_dir
                             all_records.append(record)
 
     # Create a DataFrame from the records
