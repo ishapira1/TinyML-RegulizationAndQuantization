@@ -20,7 +20,7 @@ def set_seed(seed):
 
 
 
-def train_model(model, dataset, device, batch_size=128, num_epochs=50, lr=0.001,momentum=0.9, verbose = True, reg_name=None, reg_param=None ):
+def train_model(model, dataset, device, batch_size=128, num_epochs=50, lr=0.001, verbose = True, reg_name=None, reg_param=None ):
     """
     Train the model and return the results.
     """
@@ -30,12 +30,10 @@ def train_model(model, dataset, device, batch_size=128, num_epochs=50, lr=0.001,
         'train': train_loader,
         'test': val_loader
     }
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum)
-    lr_decay_epochs = [num_epochs // 2, num_epochs * 3 // 4]
-    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=lr_decay_epochs, gamma=0.1)
-
+    optimizer = Adam(model.parameters(), lr=lr)
     regularization = {} if not reg_name else {reg_name:reg_param}
-    trainer = Trainer(model, dataloaders, criterion = torch.nn.CrossEntropyLoss(), optimizer=optimizer, device=device, regularization=regularization, verbose=verbose, lr_scheduler=lr_scheduler)
+    trainer = Trainer(model, dataloaders, criterion = torch.nn.CrossEntropyLoss(),
+                      optimizer=optimizer, device=device, regularization=regularization, verbose=verbose)
     trainer.train(num_epochs)
     return trainer
 
@@ -71,11 +69,12 @@ def run_experiments(device, pretrained=False, num_classes=10):
                     use_batch_norm = reg_name == 'batch_norm'
                     use_layer_norm = reg_name == 'layer_norm'
 
-                    model = create_model(model_name,num_classes, mini=False, dropout_rate=0,
+                    model = create_model(model_name, num_classes=num_classes,mini=False, dropout_rate=0,
                                  use_batch_norm=use_batch_norm,
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
+                    print(model)
                     model.to(device)
-                    trainer = train_model(model, dataset_name, reg_name=reg_name, reg_param=None,device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
+                    trainer = train_model(model, dataset_name, device=device, reg_name=reg_name, reg_param=None, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
                     logger.log(model, trainer, model_name, dataset_name, reg_name, None,
                                lr=lr, device=str(device), batch_size=batch_size, seed=seed,
                                pretrained=pretrained, num_epochs=epochs)
@@ -104,15 +103,15 @@ if __name__ == '__main__':
 
 
     # imagenet pretrained:
-    epochs = 150
+    epochs = 20
     batch_size = 256
-    lr = 0.01
-    DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
-    MODELS = ['resnet18']# 'alexnet', 'resnet18']
-    pretrained = True
+    lr = 0.001
+    DATASETS = ['MNIST','FashionMNIST'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
+    MODELS = ['lenet']# 'alexnet', 'resnet18']
     COMPATIBLE_MODELS = {
         # Define which models are compatible with which datasets
-        'CIFAR-10': ['resnet18'],
+        'MNIST': ['lenet'],
+        'FashionMNIST':['lenet']
        # 'ImageNet': ['resnet50'],
         # etc.
 
@@ -121,35 +120,13 @@ if __name__ == '__main__':
 
 
     REGULARIZATIONS = {
-        # 'none': None,  # No regularization parameters needed for baseline
-        # 'batch_norm': None,  # Batch normalization typically does not require explicit parameters
-        # #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
-        # 'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-        # 'l1': [
-        #     1e-5,  # Very Small
-        #     2e-5,
-        #     5e-5,
-        #     1e-4,  # Small
-        #     2e-4,
-        #     5e-4,
-        #     1e-3,  # Moderate
-        #     2e-3,
-        #     5e-3,  # High
-        #     1e-2   # Very High
-        # ],
-        'l2': [
-                1e-5,  # Very Low
-                2e-5,
-                5e-5,  # Low
-                1e-4,
-                2e-4,
-                5e-4,  # Medium
-                1e-3,  # High
-                2e-3,
-                5e-3,  # Very High
-                1e-2
-            ],
-        'l_infinty': [0.1, 0.01, 1,10,100]  # Different L-infinity regularization strengths
+        'none': None,  # No regularization parameters needed for baseline
+        'batch_norm': None,  # Batch normalization typically does not require explicit parameters
+        #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
+        #'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
+        # 'l1': [0.0002,0.0003,0.0004,0.0006,0.0007,0.0008,0.0009],  # Different L1 regularization strengths
+        # 'l2': [0.0002,0.0003,0.0004,0.0006,0.0007,0.0008,0.0009,0.003],  # Different L2 regularization strengths
+        # 'l_infinty': [0.1, 0.01, 1,10,100]  # Different L-infinity regularization strengths
     }
 
     logger = Logger()

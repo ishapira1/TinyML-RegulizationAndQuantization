@@ -76,7 +76,7 @@ def run_experiments(device, pretrained=False, num_classes=10):
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
                     print(model)
                     model.to(device)
-                    trainer = train_model(model, dataset_name, device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
+                    trainer = train_model(model, dataset_name, reg_name=reg_name, reg_param=None,device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
                     logger.log(model, trainer, model_name, dataset_name, reg_name, None,
                                lr=lr, device=str(device), batch_size=batch_size, seed=seed,
                                pretrained=pretrained, num_epochs=epochs)
