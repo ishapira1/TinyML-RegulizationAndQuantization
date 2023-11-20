@@ -1,0 +1,32 @@
+{
+    "runner_id": "itaishapira",
+    "model_name": "lenet",
+    "dataset_name": "MNIST",
+    "regularization": {},
+    "regularization_param": null,
+    "timestamp": "2023-11-18_16-48-49",
+    "quantization_method": null,
+    "criterion_name": "CrossEntropyLoss",
+    "optimizer_name": "Adam",
+    "verbose": true,
+    "train_loss": 2.315514893722534,
+    "test_loss": 2.3145704246520995,
+    "train_accuracy": 9.751666666666667,
+    "test_accuracy": 9.74,
+    "epoch_train_losses": [
+        2.308606346766154,
+        2.3097591921488445,
+        2.315514893722534
+    ],
+    "epoch_test_losses": [
+        2.309087406158447,
+        2.3093481353759766,
+        2.3145704246520995
+    ],
+    "lr": 0.1,
+    "device": "cpu",
+    "batch_size": 128,
+    "seed": 42,
+    "pretrained": false,
+    "num_epochs": 3
+}
