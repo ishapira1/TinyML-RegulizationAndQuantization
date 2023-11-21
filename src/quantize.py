@@ -40,7 +40,6 @@ def run_experiments(device, num_classes=10, pretrained=False):
                 # Compatibility check
                 if model_name not in COMPATIBLE_MODELS[dataset_name]:
                     continue
-                print(model_name)
 
                 for reg_name, reg_params in tqdm(REGULARIZATIONS.items(), desc='Regularizations', leave=False):
                     if reg_params:  # Regularizations with parameters
@@ -59,6 +58,8 @@ def run_experiments(device, num_classes=10, pretrained=False):
 
                                 model.to(device)
 
+                                print(model.graph)
+
                                 quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
                                 quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
@@ -76,10 +77,10 @@ def run_experiments(device, num_classes=10, pretrained=False):
                                         use_layer_norm=use_layer_norm)
                             
                             state_dict = torch.load(checkpoint_path)
-                            print(checkpoint_path)
                             model.load_state_dict(state_dict)
 
                             model.to(device)
+
                             quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name, bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
                             quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
 

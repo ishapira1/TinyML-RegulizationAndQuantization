@@ -1,0 +1,18 @@
+{
+    "runner_id": "alexo",
+    "model_name": "lenet",
+    "dataset_name": "MNIST",
+    "bit_width": 8,
+    "regularization": "none",
+    "regularization_param": null,
+    "train_loss": 0.007369173103198409,
+    "test_loss": 0.03173949611678254,
+    "train_accuracy": 99.78666666666666,
+    "test_accuracy": 99.06,
+    "timestamp": "2023-11-21_09-18-54",
+    "lr": 0.001,
+    "device": "cpu",
+    "batch_size": 256,
+    "seed": 42,
+    "pretrained": false
+}

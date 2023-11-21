@@ -1,6 +1,6 @@
 import torch
-import pact
-from ptq_common import quantize_model, calibrate
+from .ptq_common import quantize_model, calibrate
+from brevitas.graph.quantize import preprocess_for_quantize
 
 
 class Quantizer:
@@ -50,8 +50,14 @@ class Quantizer:
         # else:
         #     print("Quantization Method Not Recognized. Returning original Model")
         #     quantized_model = model
-        quantized_model = quantize_model(
+        preprocessed_model = preprocess_for_quantize(
             model,
+            equalize_iters=0,
+            equalize_merge_bias=True
+        )
+
+        quantized_model = quantize_model(
+            preprocessed_model,
             backend="generic",
             act_bit_width=self.bit_width,
             weight_bit_width=self.bit_width,
