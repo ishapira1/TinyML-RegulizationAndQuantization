@@ -59,7 +59,7 @@ class Logger:
             'regularization': reg_name,
             'regularization_param': param,
             'timestamp': timestamp,
-            'quantization_method': None,
+            'bit_width': 32,
         }
 
         params_and_results.update(get_attributes(trainer))
@@ -74,10 +74,10 @@ class Logger:
         checkpoint_path = os.path.join(exp_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
         save(model.state_dict(), checkpoint_path)
 
-    def append_log(self, checkpoint_path, quantization_method, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
+    def append_log(self, checkpoint_path, bit_width, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
         exp_dir = os.path.split(checkpoint_path)[0]
 
-        sub_dir = os.path.join(exp_dir, quantization_method)
+        sub_dir = os.path.join(exp_dir, "bit_width_{}".format(bit_width))
         if not os.path.exists(sub_dir):
             os.makedirs(sub_dir)
 
@@ -89,7 +89,7 @@ class Logger:
             'runner_id':user,
             'model_name':model_name,
             'dataset_name':dataset_name,
-            'quantization_method': quantization_method,
+            'bit_width': bit_width,
             'regularization': reg_name,
             'regularization_param': param,
             'train_loss': train_loss,

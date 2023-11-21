@@ -14,6 +14,7 @@ setup(
         'torch',
         'tqdm',
         'pandas',
+        'brevitas'
         # Add any other dependencies that your package needs
     ],
 )

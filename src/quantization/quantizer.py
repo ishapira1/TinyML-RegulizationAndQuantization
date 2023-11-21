@@ -1,8 +1,10 @@
 import torch
+import pact
+from ptq_common import quantize_model, calibrate
 
 
 class Quantizer:
-    def __init__(self, model, dataloaders, criterion, device, quantization_method=None, regularization=None, verbose=True):
+    def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
         """
         Initialize the Trainer.
 
@@ -16,7 +18,7 @@ class Quantizer:
         self.dataloaders = dataloaders
         self.criterion = criterion
         self.device = device
-        self.quantization_method = quantization_method if quantization_method else {}
+        self.bit_width = bit_width
         self.regularization = regularization if regularization else {}
         self.verbose = verbose
 
@@ -41,13 +43,28 @@ class Quantizer:
         return accuracy
     
     def _apply_quantization(self, model):
-        if "dynamic" in self.quantization_method:
-            quantized_model = quantize_dynamic(model, layers_to_quantize=[torch.nn.Linear, torch.nn.Conv2d])
-        elif "static" in self.quantization_method:
-            quantized_model = quantzize_static(model, self.dataloaders['train']) ##FIXME figure out right fusion
-        else:
-            print("Quantization Method Not Recognized. Returning original Model")
-            quantized_model = model
+        # if "dynamic" in self.quantization_method:
+        #     quantized_model = quantize_dynamic(model, layers_to_quantize=[torch.nn.Linear, torch.nn.Conv2d])
+        # elif "static" in self.quantization_method:
+        #     quantized_model = quantzize_static(model, self.dataloaders['train']) ##FIXME figure out right fusion
+        # else:
+        #     print("Quantization Method Not Recognized. Returning original Model")
+        #     quantized_model = model
+        quantized_model = quantize_model(
+            model,
+            backend="generic",
+            act_bit_width=self.bit_width,
+            weight_bit_width=self.bit_width,
+            bias_bit_width="int16",
+            scaling_per_output_channel=False,
+            act_quant_percentile=99.99,
+            act_quant_type='symmetric',
+            scale_factor_type='float32',
+            weight_narrow_range=False
+        )
+        
+        calibrate(self.dataloaders["train"], quantized_model, bias_corr=True)
+
         return quantized_model
 
     def quantize(self):
@@ -131,9 +148,3 @@ def quantzize_static(model, dataloader, fuse_modules = None):
     model_int8 = torch.ao.quantization.convert(model_prepared)
 
     return model_int8
-
-def quantize_linear(model):
-    """
-    
-    """
-    return
