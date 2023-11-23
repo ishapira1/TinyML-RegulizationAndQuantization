@@ -136,19 +136,19 @@ if __name__ == '__main__':
             5e-3,  # High
             1e-2   # Very High
         ],
-        # 'l2': [
-        #         1e-5,  # Very Low
-        #         2e-5,
-        #         5e-5,  # Low
-        #         1e-4,
-        #         2e-4,
-        #         5e-4,  # Medium
-        #         1e-3,  # High
-        #         2e-3,
-        #         5e-3,  # Very High
-        #         1e-2
-        #     ],
-        # 'l_infinty': [0.1, 0.01, 1,10,100]  # Different L-infinity regularization strengths
+        'l2': [
+                1e-5,  # Very Low
+                2e-5,
+                5e-5,  # Low
+                1e-4,
+                2e-4,
+                5e-4,  # Medium
+                1e-3,  # High
+                2e-3,
+                5e-3,  # Very High
+                1e-2
+            ],
+        'l_infinty': [0.1, 0.01, 1,10,100]  # Different L-infinity regularization strengths
     }
 
     logger = Logger()
