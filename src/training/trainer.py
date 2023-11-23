@@ -102,7 +102,7 @@ class Trainer:
         """
         epoch_train_losses = []  # List to store train loss after each epoch
         epoch_test_losses = []  # List to store test loss after each epoch
-
+        print(self.optimizer)
         for epoch in tqdm(range(num_epochs), desc='Epochs'):
             self.model.train()
             running_loss = 0.0

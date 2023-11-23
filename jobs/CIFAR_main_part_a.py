@@ -57,7 +57,7 @@ def run_experiments(device, pretrained=False, num_classes=10):
                         dropout_rate = param if reg_name == 'dropout' else 0
 
                         model = create_model(model_name,num_classes=num_classes, mini=False, dropout_rate=dropout_rate,
-                                     use_batch_norm=False,
+                                     use_batch_norm=True,
                                      use_layer_norm=False, pretrained=pretrained)
 
                         model.to(device)
@@ -72,7 +72,7 @@ def run_experiments(device, pretrained=False, num_classes=10):
                     use_layer_norm = reg_name == 'layer_norm'
 
                     model = create_model(model_name,num_classes, mini=False, dropout_rate=0,
-                                 use_batch_norm=use_batch_norm,
+                                 use_batch_norm=True,
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
                     print(model)
                     model.to(device)
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
 
     # imagenet pretrained:
-    epochs = 150
+    epochs = 20
     batch_size = 128
     lr = 0.001
     DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']

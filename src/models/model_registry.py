@@ -155,7 +155,7 @@ class AlexNet(nn.Module):
 
 # Definition for the ResNet18 model, suitable for ImageNet by default
 class ResNet18(nn.Module):
-    def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=False,
+    def __init__(self, num_classes=1000, input_channels=3, dropout_rate=0.5, use_batch_norm=True,
                  use_layer_norm=False, pretrained=False):
         super(ResNet18, self).__init__()
         weights = models.ResNet18_Weights.DEFAULT if pretrained else None
@@ -164,8 +164,8 @@ class ResNet18(nn.Module):
         self.dropout = nn.Dropout(dropout_rate)
 
         # Check for conflicting normalization settings
-        if use_batch_norm and use_layer_norm:
-            raise ValueError("Batch normalization and layer normalization cannot both be true")
+        # if use_batch_norm and use_layer_norm:
+        #     raise ValueError("Batch normalization and layer normalization cannot both be true")
         # Replace first conv layer if not using 3 input channels
         if input_channels != 3:
             self.model.conv1 = nn.Conv2d(input_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
@@ -184,7 +184,7 @@ class ResNet18(nn.Module):
 
 
 # The create_model function now includes 'resnet50' and 'inceptionv3' cases and the 'pretrained' parameter.
-def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_rate=0.5, use_batch_norm=False, use_layer_norm=False, pretrained=False):
+def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_rate=0.5, use_batch_norm=True, use_layer_norm=False, pretrained=False):
     if arch == 'lenet':
         model = LeNet(num_classes=num_classes if mini else num_classes,
                       input_channels=1,
