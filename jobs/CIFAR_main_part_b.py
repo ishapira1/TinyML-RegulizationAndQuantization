@@ -123,7 +123,6 @@ if __name__ == '__main__':
 
     REGULARIZATIONS = {
         # 'none': None,  # No regularization parameters needed for baseline
-        # 'batch_norm': None,  # Batch normalization typically does not require explicit parameters
         # #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
         # 'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
         # 'l1': [
