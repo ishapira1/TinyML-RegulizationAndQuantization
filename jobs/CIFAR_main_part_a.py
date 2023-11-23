@@ -57,7 +57,7 @@ def run_experiments(device, pretrained=False, num_classes=10):
                         dropout_rate = param if reg_name == 'dropout' else 0
 
                         model = create_model(model_name,num_classes=num_classes, mini=False, dropout_rate=dropout_rate,
-                                     use_batch_norm=True,
+                                     use_batch_norm=False,
                                      use_layer_norm=False, pretrained=pretrained)
 
                         model.to(device)
@@ -72,7 +72,7 @@ def run_experiments(device, pretrained=False, num_classes=10):
                     use_layer_norm = reg_name == 'layer_norm'
 
                     model = create_model(model_name,num_classes, mini=False, dropout_rate=0,
-                                 use_batch_norm=True,
+                                 use_batch_norm=False,
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
                     print(model)
                     model.to(device)
