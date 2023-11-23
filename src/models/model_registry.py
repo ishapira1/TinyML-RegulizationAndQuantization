@@ -11,6 +11,7 @@ from torchvision import models
 
 from src.models.normalization_utils import replace_bn, add_ln
 
+from src.models.resnet20 import ResNet20
 
 
 # Definition for the Inception-v3 model, suitable for ImageNet by default
@@ -220,6 +221,8 @@ def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_r
                             use_batch_norm=use_batch_norm,
                             use_layer_norm=use_layer_norm,
                             pretrained=pretrained)
+    elif arch == "resnet20":
+        model = ResNet20(num_classes=num_classes, input_channels=input_channels, dropout_rate=dropout_rate)
     else:
         raise ValueError(f"Unknown architecture '{arch}'")
     return model
@@ -227,22 +230,28 @@ def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_r
 
 # Example usage
 if __name__ == "__main__":
-    # Create a mini LeNet model instance for MNIST
-    lenet_model = create_model('lenet', mini=True)
-    print(lenet_model)
+    res20 = create_model('resnet20')
 
-    # Create an AlexNet model instance for CIFAR-10
-    alexnet_model = create_model('alexnet', mini=True)
-    print(alexnet_model)
 
-    # Create a ResNet18 model instance for ImageNet
-    resnet_model = create_model('resnet18')
-    print(resnet_model)
-
-    # Example usage (Create a ResNet50 model instance for ImageNet)
-    resnet50_model = create_model('resnet50', pretrained=True)
-    print(resnet50_model)
-
-    # Example usage (Create an Inception-v3 model instance for ImageNet)
-    inceptionv3_model = create_model('inceptionv3', pretrained=True)
-    print(inceptionv3_model)
+    # Now print the number of parameters
+    print(f'Total number of trainable parameters: {sum(p.numel() for p in res20.parameters() if p.requires_grad)}')
+    print(res20)
+    # # Create a mini LeNet model instance for MNIST
+    # lenet_model = create_model('lenet', mini=True)
+    # print(lenet_model)
+    #
+    # # Create an AlexNet model instance for CIFAR-10
+    # alexnet_model = create_model('alexnet', mini=True)
+    # print(alexnet_model)
+    #
+    # # Create a ResNet18 model instance for ImageNet
+    # resnet_model = create_model('resnet18')
+    # print(resnet_model)
+    #
+    # # Example usage (Create a ResNet50 model instance for ImageNet)
+    # resnet50_model = create_model('resnet50', pretrained=True)
+    # print(resnet50_model)
+    #
+    # # Example usage (Create an Inception-v3 model instance for ImageNet)
+    # inceptionv3_model = create_model('inceptionv3', pretrained=True)
+    # print(inceptionv3_model)
