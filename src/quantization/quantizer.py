@@ -1,8 +1,6 @@
 import torch
 from .ptq_common import quantize_model, calibrate
 from brevitas.graph.quantize import preprocess_for_quantize
-from torch.utils.data import Subset
-
 
 class Quantizer:
     def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
