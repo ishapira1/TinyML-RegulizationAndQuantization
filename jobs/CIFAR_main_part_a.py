@@ -72,7 +72,7 @@ def run_experiments(device, pretrained=False, num_classes=10):
                     use_layer_norm = reg_name == 'layer_norm'
 
                     model = create_model(model_name,num_classes, mini=False, dropout_rate=0,
-                                 use_batch_norm=use_batch_norm,
+                                 use_batch_norm=False,
                                  use_layer_norm=use_layer_norm, pretrained=pretrained)
                     print(model)
                     model.to(device)
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
 
     # imagenet pretrained:
-    epochs = 150
+    epochs = 20
     batch_size = 128
     lr = 0.001
     DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
@@ -123,7 +123,6 @@ if __name__ == '__main__':
 
     REGULARIZATIONS = {
         'none': None,  # No regularization parameters needed for baseline
-        'batch_norm': None,  # Batch normalization typically does not require explicit parameters
         #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
         'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
         'l1': [

@@ -1,0 +1,18 @@
+{
+    "runner_id": "ishapira",
+    "model_name": "lenet",
+    "dataset_name": "MNIST",
+    "quantization_method": "dynamic_quantization",
+    "regularization": "l2",
+    "regularization_param": 0.0003,
+    "train_loss": 0.01819482233126958,
+    "test_loss": 0.03229545211910736,
+    "train_accuracy": 99.47333333333333,
+    "test_accuracy": 98.91,
+    "timestamp": "2023-11-20_10-22-36",
+    "lr": 0.001,
+    "device": "cuda:0",
+    "batch_size": 256,
+    "seed": 42,
+    "pretrained": false
+}
