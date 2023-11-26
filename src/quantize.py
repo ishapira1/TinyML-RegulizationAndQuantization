@@ -4,7 +4,7 @@ from src.models.model_registry import create_model
 from src.training.trainer import Trainer
 from src.logs.logger import Logger
 from src.quantization.quantizer import Quantizer
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from torch.optim import Adam
 import os
 
@@ -21,10 +21,12 @@ def quantize_model(model, dataset, device,  bit_width=8, batch_size=128, verbose
     Train the model and return the results.
     """
     train_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=True)
-    val_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=False)
+    test_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=False)
+    calibration_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=True, subset=True)
     dataloaders = {
         'train': train_loader,
-        'test': val_loader
+        'test': test_loader,
+        'calibration': calibration_loader,
     }
     quantizer = Quantizer(model, dataloaders, criterion = torch.nn.CrossEntropyLoss(), device=device, bit_width=bit_width, verbose=verbose)
 
@@ -57,8 +59,6 @@ def run_experiments(device, num_classes=10, pretrained=False):
                                 model.load_state_dict(state_dict)
 
                                 model.to(device)
-
-                                print(model.graph)
 
                                 quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
@@ -93,54 +93,55 @@ if __name__ == '__main__':
     set_seed(seed)
 
     # Define your epochs, learning rate, dataset names, model names, and regularizations here
-    epochs = 2
-    batch_size = 256
+    # epochs = 150
+    batch_size = 128
     lr = 0.001
-    DATASETS = ['MNIST'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
-    MODELS = ['lenet']# 'alexnet', 'resnet18']
+    DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
+    MODELS = ['resnet18']# 'alexnet', 'resnet18']
     COMPATIBLE_MODELS = {
         # Define which models are compatible with which datasets
         # 'CIFAR-10': ['lenet'],
-        'MNIST': ['lenet'],
+        'CIFAR-10': ['resnet18'],
         # 'FASHIONMNIST': ['lenet'],
         #'CIFAR-10': ['resnet18']
         # etc.
     }
     REGULARIZATIONS = {
-        'none': None,  # No regularization parameters needed for baseline
-        'batch_norm': None,  # Batch normalization typically does not require explicit parameters
-        #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
-        'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-        'l1':[
-    0.0001,
-    0.0005,
-    0.001,
-    0.005,
-    0.01,
-    0.0002,
-    0.0003,
-    0.0004,
-    0.0006,
-    0.0007,
-    0.0008,
-    0.0009,
-],
-        'l2':[
-    0.05,
-    0.0001,
-    0.0005,
-    0.001,
-    0.005,
-    0.01,
-    0.0002,
-    0.0003,
-    0.0004,
-    0.0006,
-    0.0007,
-    0.0008,
-    0.0009,
-    0.003
-],
+        # 'none': None,  # No regularization parameters needed for baseline
+        # 'batch_norm': None,  # Batch normalization typically does not require explicit parameters
+        # #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
+        # 'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
+        # 'l1': [
+        #     1e-5,  # Very Small
+        # #     2e-5,
+        # #     5e-5,
+        #     1e-4,  # Small
+        # #     2e-4,
+        # #     5e-4,
+        #     1e-3,  # Moderate
+        # #     2e-3,
+        # #     5e-3,  # High
+        #     1e-2   # Very High
+        # ],
+        # 'l2':[
+        #     # None
+        #     # .0005
+        #     # 0.05,
+        #     0.0001,
+        #     0.0005,
+        #     0.001,
+        #     0.005,
+        #     0.01,
+        #     0.1
+        #     # 0.0002,
+        #     # 0.0003,
+        #     # 0.0004,
+        #     # 0.0006,
+        #     # 0.0007,
+        #     # 0.0008,
+        #     # 0.0009,
+        #     # 0.003
+        # ],
         'l_infinty': [0.001, 0.01 , 0.1  ]  # Different L-infinity regularization strengths
     }
 
@@ -150,6 +151,9 @@ if __name__ == '__main__':
         8,
         16
     }
+
+    print(REGULARIZATIONS)
+    print(BIT_WIDTH)
     #
     logger = Logger()
     run_experiments(device, pretrained=False)

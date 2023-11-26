@@ -56,7 +56,7 @@ def get_transforms(dataset_name):
 
 
 # Function to load datasets
-def load_dataset(dataset_name, batch_size, train=True, download=True):
+def load_dataset(dataset_name, batch_size, train=True, download=True, subset=None):
     transforms = get_transforms(dataset_name)
     dataset_directory = os.path.join(data_dir, dataset_name)
     os.makedirs(dataset_directory, exist_ok=True) # Make sure the dataset directory exists
@@ -73,6 +73,9 @@ def load_dataset(dataset_name, batch_size, train=True, download=True):
         dataset = datasets.FashionMNIST(root=dataset_directory, train=train, download=download, transform=transforms)
     else:
         raise ValueError(f"Dataset {dataset_name} is not supported.")
+    
+    if subset is not None:
+        dataset = torch.utils.data.Subset(dataset, range(100))
 
     return DataLoader(dataset, batch_size=batch_size, shuffle=train)
 
