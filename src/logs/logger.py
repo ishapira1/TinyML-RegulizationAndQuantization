@@ -40,7 +40,6 @@ def get_model_size_in_mb(model, bit_width=None):
     # buffer_size = sum([buf.nelement() * buf.element_size() for buf in model.buffers()])
     total_size = param_size #+ buffer_size
     total_size_mb = total_size / (1024 ** 2)  # Convert bytes to MB
-    print("total size:", total_size_mb)
 
     return total_size_mb
 
