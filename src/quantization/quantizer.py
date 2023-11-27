@@ -4,7 +4,6 @@ from brevitas.graph.quantize import preprocess_for_quantize
 
 class Quantizer:
     def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
-    def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
         """
         Initialize the Trainer. 
 
@@ -23,18 +22,14 @@ class Quantizer:
         self.bit_width = bit_width
         self.regularization = regularization if regularization else {}
         self.quantized_model = None
-<<<<<<< HEAD
         self.verbose = verbose
         print("2")
 
     def _compute_quantized_accuracy(self, dataloader):
         if self.verbose: print("_compute_quantized_accuracy")
-=======
         self.quantized_model = None
 
     def _compute_quantized_accuracy(self, dataloader):
-    def _compute_quantized_accuracy(self, dataloader):
->>>>>>> 2b7467295c79dbca0134c3242b55209289720903
         correct = 0
         total = 0
         with torch.no_grad():
