@@ -185,7 +185,7 @@ class ResNet18(nn.Module):
 
 
 # The create_model function now includes 'resnet50' and 'inceptionv3' cases and the 'pretrained' parameter.
-def create_model(arch, num_classes=1000, input_channels=3, mini=False, dropout_rate=0.5, use_batch_norm=True, use_layer_norm=False, pretrained=False):
+def create_model(arch, num_classes=10, input_channels=3, mini=False, dropout_rate=0.0, use_batch_norm=True, use_layer_norm=False, pretrained=False):
     if arch == 'lenet':
         model = LeNet(num_classes=num_classes if mini else num_classes,
                       input_channels=1,

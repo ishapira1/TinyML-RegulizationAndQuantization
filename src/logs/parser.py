@@ -3,7 +3,7 @@
 import os
 import json
 import pandas as pd
-from src.logs.logger import Logger, RESULTS_FILE_NAME_IN_LOGS, CHECKPOINT_FILE_NAME_IN_LOGS
+from src.logs.logger import Logger, RESULTS_FILE_NAME_IN_LOGS, CHECKPOINT_FILE_NAME_IN_LOGS, save_dataframe
 from torch import load
 import torch
 from tqdm import tqdm
@@ -25,6 +25,12 @@ def get_model_size_in_mb(model):
     total_size_mb = total_size / (1024 ** 2)  # Convert bytes to MB
     return total_size_mb
 
+
+
+def load_json(json_file_path):
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+    return data
 
 
 def calculate_weight_statistics(checkpoint_path):
@@ -76,11 +82,11 @@ def calculate_weight_statistics(checkpoint_path):
 
     return {
         'total_weights': total_weights,
-        'l1_norm': l1_norm,
-        'l2_norm': l2_norm,
-        'max_weight': max_weight,
-        'min_weight': min_weight,
-        'model_size_mb': total_size_mb
+        # 'l1_norm': l1_norm,
+        # 'l2_norm': l2_norm,
+        # 'max_weight': max_weight,
+        # 'min_weight': min_weight,
+        # 'model_size_mb': total_size_mb
     }
 
 
@@ -103,6 +109,31 @@ def extract_key_if_dict(value):
         return value
 
 
+
+def clean_data(df):
+    # Merge 'num_epochs' and 'epochs' columns
+    df['num_epochs'] = df['num_epochs'].fillna(df['epochs'])
+    df["quantization_method"] = df["quantization_method"].fillna('none')
+
+    # Remove the 'epochs' column from the DataFrame
+    df = df.drop(columns=['epochs'])
+
+    # Standardize 'regularization' values
+    df['regularization'] = df['regularization'].apply(extract_key_if_dict)
+
+    # Columns to consider for identifying duplicates
+    duplicate_cols = ['model_name', 'total_weights', 'seed', 'dataset_name', 
+                      'regularization', 'regularization_param', 'num_epochs', 
+                      'train_loss', 'test_loss']
+
+    # Drop duplicates based on specified columns
+    df = df.drop_duplicates(subset=duplicate_cols)
+
+    return df
+
+
+
+
 def parser():
     # Create a Logger instance to get the log directory
     logger = Logger()
@@ -117,56 +148,55 @@ def parser():
         results_file = os.path.join(exp_dir, RESULTS_FILE_NAME_IN_LOGS)
         checkpoint_path = os.path.join(exp_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
 
+        # Initialize record for each experiment
+        experiment_record = {}
+
         # Check if the checkpoint file exists
         if os.path.isfile(checkpoint_path):
             weight_stats = calculate_weight_statistics(checkpoint_path)
+            experiment_record.update(weight_stats)
 
             # Check if the results file exists
             if os.path.isfile(results_file):
-                # Open the results file and load the JSON data
                 with open(results_file, 'r') as f:
                     record = json.load(f)
-                    record.update(weight_stats)
-                    record['path'] = exp_dir
-                    all_records.append(record)
+                    experiment_record.update(record)
+                    experiment_record['path'] = exp_dir
 
-
-        # load quantization models
+        # Load quantization models
         if os.path.isdir(exp_dir):
             for quantization_method in os.listdir(exp_dir):
                 quantization_dir = os.path.join(exp_dir, quantization_method)
                 results_file = os.path.join(quantization_dir, RESULTS_FILE_NAME_IN_LOGS)
                 checkpoint_path = os.path.join(quantization_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
 
-                if os.path.isfile(checkpoint_path):
+                if os.path.isfile(checkpoint_path) and "dynamic_quantization" not in quantization_dir:
                     weight_stats = calculate_weight_statistics(checkpoint_path)
 
                     # Check if the results file exists
                     if os.path.isfile(results_file):
-                        # Open the results file and load the JSON data
                         with open(results_file, 'r') as f:
-                            record = json.load(f)
-                            record.update(weight_stats)
-                            record['path'] = exp_dir
-                            all_records.append(record)
+                            sub_record = json.load(f)
+                            bit_width = sub_record.get('bit_width', 'unknown')
+                            sub_record_path = f'bit_{bit_width}_path'
+                            experiment_record[sub_record_path] = quantization_dir
+
+                            # Prefix sub-record keys and add to experiment record
+                            for key in ['train_loss', 'test_loss', 'train_accuracy', 'test_accuracy']:
+                                if key in sub_record:
+                                    prefixed_key = f'bit_{bit_width}_{key}'
+                                    experiment_record[prefixed_key] = sub_record[key]
+
+        # Add the experiment record to the list
+        all_records.append(experiment_record)
 
     # Create a DataFrame from the records
     df = pd.DataFrame(all_records)
 
-    # Merge 'num_epochs' and 'epochs' columns
-    # Use 'epochs' values where 'num_epochs' is missing
-    df['num_epochs'] = df['num_epochs'].fillna(df['epochs'])
-
-    # Remove the 'epochs' column from the DataFrame
-    df = df.drop(columns=['epochs'])
-    df['regularization'] = df['regularization'].apply(extract_key_if_dict)
-
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    # Save the DataFrame to a CSV file
-    csv_file = os.path.join(logger.log_dir, f'all_results_{timestamp}.csv')
-
-    df.to_csv(csv_file, index=False)
+    df = clean_data(df)
+    save_dataframe(df, logger)
     return df
+
 
 # To run the parser function when the script is executed
 if __name__ == '__main__':

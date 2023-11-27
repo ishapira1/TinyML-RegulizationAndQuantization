@@ -5,11 +5,25 @@ from torch import save
 import os
 import getpass
 import glob
-
+import pandas as pd
 RESULTS_FILE_NAME_IN_LOGS = 'results.json'
 CHECKPOINT_FILE_NAME_IN_LOGS = 'model_checkpoint.pth'
-
+RESULTS_CSV_FILE_NAME = 'all_results.csv'
 from src.training.trainer import Trainer
+
+
+def save_dataframe(df, logger):
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    csv_file = os.path.join(logger.log_dir, RESULTS_CSV_FILE_NAME)
+    df.to_csv(csv_file, index=False)
+    return df
+
+
+def load_results():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    main_dir = os.path.dirname(os.path.dirname(script_dir))
+    log_dir = os.path.join(main_dir, 'results')
+    return pd.read_csv(os.path.join(log_dir, RESULTS_CSV_FILE_NAME))
 
 def is_json_serializable(value):
     try:
@@ -74,9 +88,8 @@ class Logger:
         checkpoint_path = os.path.join(exp_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
         save(model.state_dict(), checkpoint_path)
 
-    def append_log(self, checkpoint_path, quantization_method, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
-        exp_dir = os.path.split(checkpoint_path)[0]
-
+    def append_log(self, exp_dir, quantization_method, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
+        print("append_log")
         sub_dir = os.path.join(exp_dir, quantization_method)
         if not os.path.exists(sub_dir):
             os.makedirs(sub_dir)
@@ -103,8 +116,9 @@ class Logger:
 
         with open(os.path.join(sub_dir, RESULTS_FILE_NAME_IN_LOGS), 'w') as f:
             json.dump(params_and_results, f, indent=4)
-
+        print("saving model")
         save(model.state_dict(), os.path.join(sub_dir, CHECKPOINT_FILE_NAME_IN_LOGS)) 
+        print("done saving.")
 
     def save_model_weights(self, model, exp_dir):
         weights_path = os.path.join(exp_dir, 'model_weights.pth')
