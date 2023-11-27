@@ -31,4 +31,11 @@ data/FashionMNIST/*
 *.checkpoint
 *.log
 
-slurm_out/*
+slurm_out/*]633;C]633;E;echo "jobs/all_jobs.txt";c28ec64c-8d4a-4140-a4f2-12b5de9c4894jobs/all_jobs.txt
+jobs/gpu.txt
+jobs/quant_jobs_maker.py
+notebooks/results.png
+jobs/slurm_logs/
+notebooks/.ipynb_checkpoints/
+jobs/all_jobs.txt
+model_checkpoint.pth
