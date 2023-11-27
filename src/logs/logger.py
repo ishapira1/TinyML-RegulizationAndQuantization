@@ -35,6 +35,29 @@ def is_json_serializable(value):
 def get_attributes(trainer_instance):
     return {attr: value for attr, value in vars(trainer_instance).items() if is_json_serializable(value)}
 
+def get_model_size_in_mb(model, bit_width=None):
+    """
+    Calculate the total size of a PyTorch model in megabytes (MB).
+
+    :param model: The PyTorch model.
+    :return: The total size of the model in MB.
+    """
+    param_size = 0
+    if bit_width is not None:
+        for param in model.parameters():
+            # if is?nstance(param, )
+            param_size += param.nelement() * bit_width/8
+    else:
+        for param in model.parameters():
+            # if is?nstance(param, )
+            param_size += param.nelement() * param.element_size()
+    # buffer_size = sum([buf.nelement() * buf.element_size() for buf in model.buffers()])
+    total_size = param_size #+ buffer_size
+    total_size_mb = total_size / (1024 ** 2)  # Convert bytes to MB
+    print("total size:", total_size_mb)
+
+    return total_size_mb
+
 class Logger:
     def __init__(self, log_dir="logs"):
         self.script_dir = os.path.dirname(os.path.abspath(__file__))  # "logs"
@@ -64,6 +87,7 @@ class Logger:
         exp_name = f"{user}_{model_name}_{dataset_name}_{reg_name}_{param}_{timestamp}"
         exp_dir = os.path.join(self.log_dir, exp_name)
         os.makedirs(exp_dir)
+        model_size = get_model_size_in_mb(model)
 
         # Save parameters and results
         params_and_results = {
@@ -73,7 +97,8 @@ class Logger:
             'regularization': reg_name,
             'regularization_param': param,
             'timestamp': timestamp,
-            'quantization_method': None,
+            'bit_width': 32,
+            'model_size_mb': model_size
         }
 
         params_and_results.update(get_attributes(trainer))
@@ -88,37 +113,51 @@ class Logger:
         checkpoint_path = os.path.join(exp_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
         save(model.state_dict(), checkpoint_path)
 
+<<<<<<< HEAD
     def append_log(self, exp_dir, quantization_method, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
         print("append_log")
         sub_dir = os.path.join(exp_dir, quantization_method)
+=======
+    def append_log(self, checkpoint_path, bit_width, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
+        exp_dir = os.path.split(checkpoint_path)[0]
+
+        sub_dir = os.path.join(exp_dir, "bit_width_{}".format(bit_width))
+>>>>>>> 2b7467295c79dbca0134c3242b55209289720903
         if not os.path.exists(sub_dir):
             os.makedirs(sub_dir)
 
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         user = getpass.getuser()
-        # model_size = 
+        model_size = get_model_size_in_mb(model, bit_width=bit_width)
 
         params_and_results = {
             'runner_id':user,
             'model_name':model_name,
             'dataset_name':dataset_name,
-            'quantization_method': quantization_method,
+            'bit_width': bit_width,
             'regularization': reg_name,
             'regularization_param': param,
             'train_loss': train_loss,
             'test_loss': test_loss,
             'train_accuracy': train_accuracy,
             'test_accuracy': test_accuracy,
-            'timestamp': timestamp
+            'timestamp': timestamp,
+            'model_size_mb': model_size
         }
         
         params_and_results.update(kwargs)
 
         with open(os.path.join(sub_dir, RESULTS_FILE_NAME_IN_LOGS), 'w') as f:
             json.dump(params_and_results, f, indent=4)
+<<<<<<< HEAD
         print("saving model")
         save(model.state_dict(), os.path.join(sub_dir, CHECKPOINT_FILE_NAME_IN_LOGS)) 
         print("done saving.")
+=======
+
+        # stop saving model checkpoint file
+        # save(model.state_dict(), os.path.join(sub_dir, CHECKPOINT_FILE_NAME_IN_LOGS)) 
+>>>>>>> 2b7467295c79dbca0134c3242b55209289720903
 
     def save_model_weights(self, model, exp_dir):
         weights_path = os.path.join(exp_dir, 'model_weights.pth')

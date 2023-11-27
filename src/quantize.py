@@ -4,15 +4,9 @@ from src.models.model_registry import create_model
 from src.training.trainer import Trainer
 from src.logs.logger import Logger
 from src.quantization.quantizer import Quantizer
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from torch.optim import Adam
 import os
-
-QUANTIZATION_METHODS = {
-    'dynamic_quantization',
-    'static_quantization'
-}
-
 
 def set_seed(seed):
     """
@@ -22,17 +16,19 @@ def set_seed(seed):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
-def quantize_model(model, dataset, device,  quantization_method=None, batch_size=128, verbose = True):
+def quantize_model(model, dataset, device,  bit_width=8, batch_size=128, verbose = True):
     """
     Train the model and return the results.
     """
     train_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=True)
-    val_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=False)
+    test_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=False)
+    calibration_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=True, subset=True)
     dataloaders = {
         'train': train_loader,
-        'test': val_loader
+        'test': test_loader,
+        'calibration': calibration_loader,
     }
-    quantizer = Quantizer(model, dataloaders, criterion = torch.nn.CrossEntropyLoss(), device=device, quantization_method=quantization_method, verbose=verbose)
+    quantizer = Quantizer(model, dataloaders, criterion = torch.nn.CrossEntropyLoss(), device=device, bit_width=bit_width, verbose=verbose)
 
     return quantizer.quantize()
 
@@ -40,13 +36,12 @@ def run_experiments(device, num_classes=10, pretrained=False):
     """
     Run experiments across different datasets, models, and regularizations.
     """
-    for quantization_method in tqdm(QUANTIZATION_METHODS, desc='Quantization Methods', leave=False):
+    for bit_width in tqdm(BIT_WIDTH, desc='Bit Widths', leave=False):
         for dataset_name in tqdm(DATASETS, desc='Datasets', leave=False):
             for model_name in tqdm(MODELS, desc='Models', leave=False):
                 # Compatibility check
                 if model_name not in COMPATIBLE_MODELS[dataset_name]:
                     continue
-                print(model_name)
 
                 for reg_name, reg_params in tqdm(REGULARIZATIONS.items(), desc='Regularizations', leave=False):
                     if reg_params:  # Regularizations with parameters
@@ -65,11 +60,11 @@ def run_experiments(device, num_classes=10, pretrained=False):
 
                                 model.to(device)
 
-                                quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name,  quantization_method=quantization_method, device=device, batch_size=batch_size, verbose=True)
+                                quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
                                 quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
 
-                                logger.append_log(quantized_checkpoint_path, quantization_method, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                                logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
                     else:  # Regularizations without parameters
                         # Set flags for batch_norm and layer_norm based on reg_name
                         checkpoint_paths = logger.get_checkpoint(model_name, dataset_name, reg_name, None)
@@ -82,14 +77,14 @@ def run_experiments(device, num_classes=10, pretrained=False):
                                         use_layer_norm=use_layer_norm)
                             
                             state_dict = torch.load(checkpoint_path)
-                            print(checkpoint_path)
                             model.load_state_dict(state_dict)
 
                             model.to(device)
-                            quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name, quantization_method=quantization_method, device=device, batch_size=batch_size, verbose=True)
+
+                            quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name, bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
                             quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
 
-                            logger.append_log(quantized_checkpoint_path, quantization_method, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                            logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
 
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -98,61 +93,50 @@ if __name__ == '__main__':
     set_seed(seed)
 
     # Define your epochs, learning rate, dataset names, model names, and regularizations here
-    epochs = 2
-    batch_size = 256
+    # epochs = 150
+    batch_size = 128
     lr = 0.001
-    DATASETS = ['MNIST'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
-    MODELS = ['lenet']# 'alexnet', 'resnet18']
+    DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
+    MODELS = ['resnet20']# 'alexnet', 'resnet18']
     COMPATIBLE_MODELS = {
         # Define which models are compatible with which datasets
         # 'CIFAR-10': ['lenet'],
-        'MNIST': ['lenet'],
+        'CIFAR-10': ['resnet20'],
         # 'FASHIONMNIST': ['lenet'],
         #'CIFAR-10': ['resnet18']
         # etc.
     }
     REGULARIZATIONS = {
-        'none': None,  # No regularization parameters needed for baseline
-        'batch_norm': None,  # Batch normalization typically does not require explicit parameters
-        #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
-        'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-        'l1':[
-    0.0001,
-    0.0005,
-    0.001,
-    0.005,
-    0.01,
-    0.0002,
-    0.0003,
-    0.0004,
-    0.0006,
-    0.0007,
-    0.0008,
-    0.0009,
-],
-        'l2':[
-    0.05,
-    0.0001,
-    0.0005,
-    0.001,
-    0.005,
-    0.01,
-    0.0002,
-    0.0003,
-    0.0004,
-    0.0006,
-    0.0007,
-    0.0008,
-    0.0009,
-    0.003
-],
-        'l_infinty': [0.001, 0.01 , 0.1  ]  # Different L-infinity regularization strengths
+        # 'none': None,  # No regularization parameters needed for baseline
+        # 'batch_norm': None,  # Batch normalization typically does not require explicit parameters
+        # #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
+        # 'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
+        # 'l1': [
+        #     1e-4,
+        #     2e-4,
+        #     1e-5,
+        #     2e-5,
+        #     5e-5
+        # ],
+        # 'l2':[
+        #     1e-4,
+        #     2e-4,
+        #     1e-5,
+        #     2e-5,
+        #     5e-5
+        # ],
+        # 'l_infinty': [0.001, 0.01 , 0.1  ]  # Different L-infinity regularization strengths
     }
 
-    QUANTIZATION_METHODS = {
-        'dynamic_quantization',
-        'static_quantization'
+    BIT_WIDTH = {
+        2,
+        4,
+        8,
+        16
     }
+
+    print(REGULARIZATIONS)
+    print(BIT_WIDTH)
     #
     logger = Logger()
     run_experiments(device, pretrained=False)

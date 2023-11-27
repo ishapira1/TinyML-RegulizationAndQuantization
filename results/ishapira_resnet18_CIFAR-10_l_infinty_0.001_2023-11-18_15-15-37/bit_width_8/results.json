@@ -1,0 +1,19 @@
+{
+    "runner_id": "aoesterling",
+    "model_name": "resnet18",
+    "dataset_name": "CIFAR-10",
+    "bit_width": 8,
+    "regularization": "l_infinty",
+    "regularization_param": 0.001,
+    "train_loss": 0.0822834382724762,
+    "test_loss": 1.608771675300598,
+    "train_accuracy": 83.94,
+    "test_accuracy": 62.7,
+    "timestamp": "2023-11-26_19-06-45",
+    "model_size_mb": 10.659153938293457,
+    "lr": 0.001,
+    "device": "cuda:0",
+    "batch_size": 128,
+    "seed": 42,
+    "pretrained": false
+}

@@ -9,6 +9,7 @@ import torch
 from tqdm import tqdm
 import datetime
 
+<<<<<<< HEAD
 
 def get_model_size_in_mb(model):
     """
@@ -33,6 +34,8 @@ def load_json(json_file_path):
     return data
 
 
+=======
+>>>>>>> 2b7467295c79dbca0134c3242b55209289720903
 def calculate_weight_statistics(checkpoint_path):
     """
     Calculate the statistics of the weights from the model checkpoint, including the total number
@@ -170,16 +173,26 @@ def parser():
                 results_file = os.path.join(quantization_dir, RESULTS_FILE_NAME_IN_LOGS)
                 checkpoint_path = os.path.join(quantization_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
 
+<<<<<<< HEAD
                 if os.path.isfile(checkpoint_path) and "dynamic_quantization" not in quantization_dir:
                     weight_stats = calculate_weight_statistics(checkpoint_path)
 
+=======
+                if os.path.isfile(checkpoint_path):
+>>>>>>> 2b7467295c79dbca0134c3242b55209289720903
                     # Check if the results file exists
                     if os.path.isfile(results_file):
                         with open(results_file, 'r') as f:
+<<<<<<< HEAD
                             sub_record = json.load(f)
                             bit_width = sub_record.get('bit_width', 'unknown')
                             sub_record_path = f'bit_{bit_width}_path'
                             experiment_record[sub_record_path] = quantization_dir
+=======
+                            record = json.load(f)
+                            record['path'] = exp_dir
+                            all_records.append(record)
+>>>>>>> 2b7467295c79dbca0134c3242b55209289720903
 
                             # Prefix sub-record keys and add to experiment record
                             for key in ['train_loss', 'test_loss', 'train_accuracy', 'test_accuracy']:
