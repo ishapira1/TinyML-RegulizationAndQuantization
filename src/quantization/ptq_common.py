@@ -168,15 +168,19 @@ def calibrate(calib_loader, model, bias_corr=True):
     """
     Perform calibration and bias correction, if enabled
     """
+    print("calibrate")
     model.eval()
     dtype = next(model.parameters()).dtype
     device = next(model.parameters()).device
+
+    
     with torch.no_grad():
         with calibration_mode(model):
             for i, (images, target) in enumerate(calib_loader):
                 images = images.to(device)
                 images = images.to(dtype)
                 model(images)
+                print(f"\r{i}", end="")
 
         if bias_corr:
             with bias_correction_mode(model):

@@ -1,11 +1,11 @@
 import torch
-from .ptq_common import quantize_model, calibrate
+from src.quantization.ptq_common import quantize_model, calibrate
 from brevitas.graph.quantize import preprocess_for_quantize
 
 class Quantizer:
     def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
         """
-        Initialize the Trainer.
+        Initialize the Trainer. 
 
         :param model: The neural network model.
         :param dataloaders: A dictionary containing the 'train' and 'test' DataLoader.
@@ -17,10 +17,10 @@ class Quantizer:
         self.dataloaders = dataloaders
         self.criterion = criterion
         self.device = device
+        print(f"self.device = {device}")
         self.bit_width = bit_width
         self.bit_width = bit_width
         self.regularization = regularization if regularization else {}
-        self.verbose = verbose
         self.quantized_model = None
 
     def _compute_quantized_accuracy(self, dataloader):
@@ -50,6 +50,7 @@ class Quantizer:
             equalize_merge_bias=False
         )
 
+
         quantized_model = quantize_model(
             preprocessed_model,
             backend="generic",
@@ -62,9 +63,10 @@ class Quantizer:
             scale_factor_type='float32',
             weight_narrow_range=False
         )
-        
-        calibrate(self.dataloaders["calibration"], quantized_model, bias_corr=True)
 
+        quantized_model.to(self.device)
+
+        calibrate(self.dataloaders["calibration"], quantized_model, bias_corr=True)
         return quantized_model
 
     def quantize(self):
