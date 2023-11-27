@@ -1,0 +1,14 @@
+{
+    "runner_id": "ishapira",
+    "model_name": "lenet",
+    "dataset_name": "MNIST",
+    "quantization_method": "PTQ_bit_8",
+    "regularization": "l2",
+    "regularization_param": 0.0003,
+    "train_loss": 0.018192901154359183,
+    "test_loss": 0.03229150076329242,
+    "train_accuracy": 99.46166666666667,
+    "test_accuracy": 98.88,
+    "timestamp": "2023-11-26_20-24-15",
+    "bit_width": 8
+}
