@@ -4,6 +4,7 @@ from brevitas.graph.quantize import preprocess_for_quantize
 
 class Quantizer:
     def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
+    def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
         """
         Initialize the Trainer.
 
@@ -18,16 +19,20 @@ class Quantizer:
         self.criterion = criterion
         self.device = device
         self.bit_width = bit_width
+        self.bit_width = bit_width
         self.regularization = regularization if regularization else {}
         self.verbose = verbose
         self.quantized_model = None
+        self.quantized_model = None
 
+    def _compute_quantized_accuracy(self, dataloader):
     def _compute_quantized_accuracy(self, dataloader):
         correct = 0
         total = 0
         with torch.no_grad():
             for inputs, labels in dataloader:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
+                outputs = self.quantized_model(inputs)
                 outputs = self.quantized_model(inputs)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
@@ -71,6 +76,7 @@ class Quantizer:
         Quantize model, and compute train/test loss, train/test accuracy
         """
         self.quantized_model = self._apply_quantization(self.model).to(self.device)
+        self.quantized_model = self._apply_quantization(self.model).to(self.device)
 
         self.quantized_model.eval()
 
@@ -91,6 +97,8 @@ class Quantizer:
         test_loss = test_running_loss / len(self.dataloaders['test'].dataset)
         train_loss = train_running_loss / len(self.dataloaders['train'].dataset)
 
+        train_accuracy = self._compute_quantized_accuracy(self.dataloaders['train'])
+        test_accuracy = self._compute_quantized_accuracy(self.dataloaders['test'])
         train_accuracy = self._compute_quantized_accuracy(self.dataloaders['train'])
         test_accuracy = self._compute_quantized_accuracy(self.dataloaders['test'])
         return self.quantized_model, train_loss, test_loss,train_accuracy, test_accuracy    
