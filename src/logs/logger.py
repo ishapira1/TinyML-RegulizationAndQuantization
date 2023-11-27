@@ -113,16 +113,14 @@ class Logger:
         checkpoint_path = os.path.join(exp_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
         save(model.state_dict(), checkpoint_path)
 
-<<<<<<< HEAD
     def append_log(self, exp_dir, quantization_method, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
         print("append_log")
         sub_dir = os.path.join(exp_dir, quantization_method)
-=======
+
     def append_log(self, checkpoint_path, bit_width, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
         exp_dir = os.path.split(checkpoint_path)[0]
 
         sub_dir = os.path.join(exp_dir, "bit_width_{}".format(bit_width))
->>>>>>> 2b7467295c79dbca0134c3242b55209289720903
         if not os.path.exists(sub_dir):
             os.makedirs(sub_dir)
 
@@ -149,15 +147,12 @@ class Logger:
 
         with open(os.path.join(sub_dir, RESULTS_FILE_NAME_IN_LOGS), 'w') as f:
             json.dump(params_and_results, f, indent=4)
-<<<<<<< HEAD
         print("saving model")
         save(model.state_dict(), os.path.join(sub_dir, CHECKPOINT_FILE_NAME_IN_LOGS)) 
         print("done saving.")
-=======
 
         # stop saving model checkpoint file
         # save(model.state_dict(), os.path.join(sub_dir, CHECKPOINT_FILE_NAME_IN_LOGS)) 
->>>>>>> 2b7467295c79dbca0134c3242b55209289720903
 
     def save_model_weights(self, model, exp_dir):
         weights_path = os.path.join(exp_dir, 'model_weights.pth')
