@@ -97,11 +97,11 @@ if __name__ == '__main__':
     batch_size = 128
     lr = 0.001
     DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
-    MODELS = ['resnet18']# 'alexnet', 'resnet18']
+    MODELS = ['resnet20']# 'alexnet', 'resnet18']
     COMPATIBLE_MODELS = {
         # Define which models are compatible with which datasets
         # 'CIFAR-10': ['lenet'],
-        'CIFAR-10': ['resnet18'],
+        'CIFAR-10': ['resnet20'],
         # 'FASHIONMNIST': ['lenet'],
         #'CIFAR-10': ['resnet18']
         # etc.
@@ -112,37 +112,20 @@ if __name__ == '__main__':
         # #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
         # 'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
         # 'l1': [
-        #     1e-5,  # Very Small
-        # #     2e-5,
-        # #     5e-5,
-        #     1e-4,  # Small
-        # #     2e-4,
-        # #     5e-4,
-        #     1e-3,  # Moderate
-        # #     2e-3,
-        # #     5e-3,  # High
-        #     1e-2   # Very High
+        #     1e-4,
+        #     2e-4,
+        #     1e-5,
+        #     2e-5,
+        #     5e-5
         # ],
         # 'l2':[
-        #     # None
-        #     # .0005
-        #     # 0.05,
-        #     0.0001,
-        #     0.0005,
-        #     0.001,
-        #     0.005,
-        #     0.01,
-        #     0.1
-        #     # 0.0002,
-        #     # 0.0003,
-        #     # 0.0004,
-        #     # 0.0006,
-        #     # 0.0007,
-        #     # 0.0008,
-        #     # 0.0009,
-        #     # 0.003
+        #     1e-4,
+        #     2e-4,
+        #     1e-5,
+        #     2e-5,
+        #     5e-5
         # ],
-        'l_infinty': [0.001, 0.01 , 0.1  ]  # Different L-infinity regularization strengths
+        # 'l_infinty': [0.001, 0.01 , 0.1  ]  # Different L-infinity regularization strengths
     }
 
     BIT_WIDTH = {

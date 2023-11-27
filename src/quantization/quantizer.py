@@ -58,7 +58,7 @@ class Quantizer:
             weight_bit_width=self.bit_width,
             bias_bit_width="int32",
             scaling_per_output_channel=False,
-            act_quant_percentile=99.9,
+            act_quant_percentile=99.99,
             act_quant_type='asymmetric',
             scale_factor_type='float32',
             weight_narrow_range=False

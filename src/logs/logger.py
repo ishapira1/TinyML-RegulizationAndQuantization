@@ -21,6 +21,29 @@ def is_json_serializable(value):
 def get_attributes(trainer_instance):
     return {attr: value for attr, value in vars(trainer_instance).items() if is_json_serializable(value)}
 
+def get_model_size_in_mb(model, bit_width=None):
+    """
+    Calculate the total size of a PyTorch model in megabytes (MB).
+
+    :param model: The PyTorch model.
+    :return: The total size of the model in MB.
+    """
+    param_size = 0
+    if bit_width is not None:
+        for param in model.parameters():
+            # if is?nstance(param, )
+            param_size += param.nelement() * bit_width/8
+    else:
+        for param in model.parameters():
+            # if is?nstance(param, )
+            param_size += param.nelement() * param.element_size()
+    # buffer_size = sum([buf.nelement() * buf.element_size() for buf in model.buffers()])
+    total_size = param_size #+ buffer_size
+    total_size_mb = total_size / (1024 ** 2)  # Convert bytes to MB
+    print("total size:", total_size_mb)
+
+    return total_size_mb
+
 class Logger:
     def __init__(self, log_dir="logs"):
         self.script_dir = os.path.dirname(os.path.abspath(__file__))  # "logs"
@@ -50,6 +73,7 @@ class Logger:
         exp_name = f"{user}_{model_name}_{dataset_name}_{reg_name}_{param}_{timestamp}"
         exp_dir = os.path.join(self.log_dir, exp_name)
         os.makedirs(exp_dir)
+        model_size = get_model_size_in_mb(model)
 
         # Save parameters and results
         params_and_results = {
@@ -60,6 +84,7 @@ class Logger:
             'regularization_param': param,
             'timestamp': timestamp,
             'bit_width': 32,
+            'model_size_mb': model_size
         }
 
         params_and_results.update(get_attributes(trainer))
@@ -83,7 +108,7 @@ class Logger:
 
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         user = getpass.getuser()
-        # model_size = 
+        model_size = get_model_size_in_mb(model, bit_width=bit_width)
 
         params_and_results = {
             'runner_id':user,
@@ -96,7 +121,8 @@ class Logger:
             'test_loss': test_loss,
             'train_accuracy': train_accuracy,
             'test_accuracy': test_accuracy,
-            'timestamp': timestamp
+            'timestamp': timestamp,
+            'model_size_mb': model_size
         }
         
         params_and_results.update(kwargs)
@@ -104,7 +130,8 @@ class Logger:
         with open(os.path.join(sub_dir, RESULTS_FILE_NAME_IN_LOGS), 'w') as f:
             json.dump(params_and_results, f, indent=4)
 
-        save(model.state_dict(), os.path.join(sub_dir, CHECKPOINT_FILE_NAME_IN_LOGS)) 
+        # stop saving model checkpoint file
+        # save(model.state_dict(), os.path.join(sub_dir, CHECKPOINT_FILE_NAME_IN_LOGS)) 
 
     def save_model_weights(self, model, exp_dir):
         weights_path = os.path.join(exp_dir, 'model_weights.pth')

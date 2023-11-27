@@ -75,7 +75,7 @@ def load_dataset(dataset_name, batch_size, train=True, download=True, subset=Non
         raise ValueError(f"Dataset {dataset_name} is not supported.")
     
     if subset is not None:
-        dataset = torch.utils.data.Subset(dataset, range(100))
+        dataset = torch.utils.data.Subset(dataset, range(1000))
 
     return DataLoader(dataset, batch_size=batch_size, shuffle=train)
 

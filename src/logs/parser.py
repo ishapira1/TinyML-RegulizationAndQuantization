@@ -9,24 +9,6 @@ import torch
 from tqdm import tqdm
 import datetime
 
-
-def get_model_size_in_mb(model):
-    """
-    Calculate the total size of a PyTorch model in megabytes (MB).
-
-    :param model: The PyTorch model.
-    :return: The total size of the model in MB.
-    """
-    param_size = 0
-    for param in model.parameters():
-        param_size += param.nelement() * param.element_size()
-    buffer_size = sum([buf.nelement() * buf.element_size() for buf in model.buffers()])
-    total_size = param_size + buffer_size
-    total_size_mb = total_size / (1024 ** 2)  # Convert bytes to MB
-    return total_size_mb
-
-
-
 def calculate_weight_statistics(checkpoint_path):
     """
     Calculate the statistics of the weights from the model checkpoint, including the total number
@@ -139,14 +121,11 @@ def parser():
                 checkpoint_path = os.path.join(quantization_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
 
                 if os.path.isfile(checkpoint_path):
-                    weight_stats = calculate_weight_statistics(checkpoint_path)
-
                     # Check if the results file exists
                     if os.path.isfile(results_file):
                         # Open the results file and load the JSON data
                         with open(results_file, 'r') as f:
                             record = json.load(f)
-                            record.update(weight_stats)
                             record['path'] = exp_dir
                             all_records.append(record)
 
