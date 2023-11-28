@@ -153,8 +153,11 @@ def parser():
 
         # Check if the checkpoint file exists
         if os.path.isfile(checkpoint_path):
-            weight_stats = calculate_weight_statistics(checkpoint_path)
-            experiment_record.update(weight_stats)
+            try:
+                weight_stats = calculate_weight_statistics(checkpoint_path)
+                experiment_record.update(weight_stats)
+            except:
+                pass
 
             # Check if the results file exists
             if os.path.isfile(results_file):
@@ -171,12 +174,15 @@ def parser():
                 checkpoint_path = os.path.join(quantization_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
 
                 if os.path.isfile(checkpoint_path) and "dynamic_quantization" not in quantization_dir:
-                    weight_stats = calculate_weight_statistics(checkpoint_path)
 
                     # Check if the results file exists
                     if os.path.isfile(results_file):
                         with open(results_file, 'r') as f:
-                            sub_record = json.load(f)
+                            try:
+                                sub_record = json.load(f)
+                            except:
+                                print(f"error {results_file}")
+                                continue
                             bit_width = sub_record.get('bit_width', 'unknown')
                             sub_record_path = f'bit_{bit_width}_path'
                             experiment_record[sub_record_path] = quantization_dir
