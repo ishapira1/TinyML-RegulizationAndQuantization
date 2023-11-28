@@ -20,8 +20,8 @@ def quantize_model(model, dataset, device,  bit_width=8, batch_size=128, verbose
     """
     Train the model and return the results.
     """
-    train_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=True)
-    test_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=False)
+    train_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=True, subset=True)
+    test_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=False, subset=True)
     calibration_loader = load_dataset(dataset_name=dataset, batch_size=batch_size, train=True, subset=True)
     dataloaders = {
         'train': train_loader,
@@ -60,11 +60,15 @@ def run_experiments(device, num_classes=10, pretrained=False):
 
                                 model.to(device)
 
-                                quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
+                                quantized_model,_,_,_,_= quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
-                                quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
+                                state_dict = torch.load(os.path.join(os.path.split(checkpoint_path)[0], f"bit_width_{bit_width}", "model_checkpoint.pth"))
 
-                                logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                                quantized_model.load_state_dict(state_dict)
+
+                                print(quantized_model.model)
+                                print(quantized_model.model.conv1.quant_weight())
+
                     else:  # Regularizations without parameters
                         # Set flags for batch_norm and layer_norm based on reg_name
                         checkpoint_paths = logger.get_checkpoint(model_name, dataset_name, reg_name, None)
@@ -76,15 +80,17 @@ def run_experiments(device, num_classes=10, pretrained=False):
                                         use_batch_norm=use_batch_norm,
                                         use_layer_norm=use_layer_norm)
                             
-                            state_dict = torch.load(checkpoint_path)
-                            model.load_state_dict(state_dict)
-
                             model.to(device)
 
-                            quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name, bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
-                            quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
+                            quantized_model, _,_,_,_= quantize_model(model, dataset_name, bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
-                            logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                            state_dict = torch.load(os.path.join(os.path.split(checkpoint_path)[0], f"bit_width_{bit_width}", "model_checkpoint.pth"))
+
+                            quantized_model.load_state_dict(state_dict)
+
+                            print(quantized_model.model)
+                            print(quantized_model.model.conv1.quant_weight())
+
 
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
