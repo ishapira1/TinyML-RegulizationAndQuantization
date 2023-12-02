@@ -112,11 +112,11 @@ def extract_key_if_dict(value):
 
 def clean_data(df):
     # Merge 'num_epochs' and 'epochs' columns
-    df['num_epochs'] = df['num_epochs'].fillna(df['epochs'])
+    if "epochs" in df.columns:
+        df['num_epochs'] = df['num_epochs'].fillna(df['epochs'])
+        df = df.drop(columns=['epochs'])
     df["quantization_method"] = df["quantization_method"].fillna('none')
 
-    # Remove the 'epochs' column from the DataFrame
-    df = df.drop(columns=['epochs'])
 
     # Standardize 'regularization' values
     df['regularization'] = df['regularization'].apply(extract_key_if_dict)

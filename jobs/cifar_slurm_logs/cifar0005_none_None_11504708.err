@@ -1,0 +1,7 @@
+slurmstepd: error: slurm_get_node_energy: Zero Bytes were transmitted or received
+slurmstepd: error: _get_joules_task: can't get info from slurmd
+usage: CIFAR_job.py [-h] --regularization_type {l1,l2,l_infinty,none}
+                    [--regularization_param REGULARIZATION_PARAM]
+CIFAR_job.py: error: argument --regularization_param: invalid float value: 'None'
+slurmstepd: error: slurm_get_node_energy: Zero Bytes were transmitted or received
+slurmstepd: error: _get_joules_task: can't get info from slurmd

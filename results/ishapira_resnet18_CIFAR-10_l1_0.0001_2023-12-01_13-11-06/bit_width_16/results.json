@@ -1,0 +1,16 @@
+{
+    "runner_id": "ishapira",
+    "model_name": "resnet18",
+    "dataset_name": "CIFAR-10",
+    "bit_width": 16,
+    "regularization": "l1",
+    "regularization_param": 0.0001,
+    "train_loss": 0.8542057880973816,
+    "test_loss": 0.9907087976455689,
+    "train_accuracy": 77.33109999999999,
+    "test_accuracy": 73.13239999999999,
+    "timestamp": "2023-12-02_11-20-07",
+    "model_size_mb": 21.318307876586914,
+    "quantization_method": "PTQ_bit_16",
+    "exp_dir": "../results/ishapira_resnet18_CIFAR-10_l1_0.0001_2023-12-01_13-11-06"
+}

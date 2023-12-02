@@ -5,6 +5,8 @@ from src.training.trainer import Trainer
 from src.logs.logger import Logger
 from tqdm import tqdm
 from torch.optim import Adam
+import argparse
+
 # import warnings
 # from urllib3.exceptions import InsecureRequestWarning
 #
@@ -45,112 +47,60 @@ def run_experiments(device, pretrained=False, num_classes=10):
     """
     Run experiments across different datasets, models, and regularizations.
     """
-    for dataset_name in tqdm(DATASETS, desc='Datasets', leave=False):
-        for model_name in tqdm(MODELS, desc='Models', leave=False):
-            # Compatibility check
-            if model_name not in COMPATIBLE_MODELS[dataset_name]:
-                continue
+    if reg_param > 0:  # Regularizations with parameters
+        dropout_rate = reg_param if reg_name == 'dropout' else 0
 
-            for reg_name, reg_params in tqdm(REGULARIZATIONS.items(), desc='Regularizations', leave=False):
-                if reg_params:  # Regularizations with parameters
-                    for param in tqdm(reg_params, desc='Params', leave=False):
-                        dropout_rate = param if reg_name == 'dropout' else 0
+        model = create_model(model_name,num_classes=num_classes, mini=False, dropout_rate=dropout_rate,
+                        use_batch_norm=False,
+                        use_layer_norm=False, pretrained=pretrained)
 
-                        model = create_model(model_name,num_classes=num_classes, mini=False, dropout_rate=dropout_rate,
-                                     use_batch_norm=False,
-                                     use_layer_norm=False, pretrained=pretrained)
+        model.to(device)
 
-                        model.to(device)
+        trainer = train_model(model, dataset_name, reg_name=reg_name, reg_param=reg_param, device=device, batch_size=batch_size, num_epochs=epochs,
+                    lr=lr, verbose=True)
+        logger.log(model, trainer, model_name, dataset_name, reg_name, reg_param,
+                    lr = lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained, num_epochs=epochs)
+    else:  # Regularizations without parameters
+        # Set flags for batch_norm and layer_norm based on reg_name
+        use_batch_norm = reg_name == 'batch_norm'
+        use_layer_norm = reg_name == 'layer_norm'
 
-                        trainer = train_model(model, dataset_name, reg_name=reg_name, reg_param=param, device=device, batch_size=batch_size, num_epochs=epochs,
-                                    lr=lr, verbose=True)
-                        logger.log(model, trainer, model_name, dataset_name, reg_name, param,
-                                   lr = lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained, num_epochs=epochs)
-                else:  # Regularizations without parameters
-                    # Set flags for batch_norm and layer_norm based on reg_name
-                    use_batch_norm = reg_name == 'batch_norm'
-                    use_layer_norm = reg_name == 'layer_norm'
-
-                    model = create_model(model_name,num_classes, mini=False, dropout_rate=0,
-                                 use_batch_norm=False,
-                                 use_layer_norm=use_layer_norm, pretrained=pretrained)
-                    print(model)
-                    model.to(device)
-                    trainer = train_model(model, dataset_name, reg_name=reg_name, reg_param=None,device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
-                    logger.log(model, trainer, model_name, dataset_name, reg_name, None,
-                               lr=lr, device=str(device), batch_size=batch_size, seed=seed,
-                               pretrained=pretrained, num_epochs=epochs)
+        model = create_model(model_name,num_classes, mini=False, dropout_rate=0,
+                        use_batch_norm=False,
+                        use_layer_norm=use_layer_norm, pretrained=pretrained)
+        model.to(device)
+        trainer = train_model(model, dataset_name, reg_name=reg_name, reg_param=None,device=device, batch_size=batch_size,num_epochs=epochs, lr=lr, verbose=True)
+        logger.log(model, trainer, model_name, dataset_name, reg_name, None,
+                    lr=lr, device=str(device), batch_size=batch_size, seed=seed,
+                    pretrained=pretrained, num_epochs=epochs)
 
 
 
 if __name__ == '__main__':
+    # Set up argparse
+    parser = argparse.ArgumentParser(description="Run experiments with different regularizations")
+    parser.add_argument("--regularization_type", choices=['l1', 'l2', 'l_infinty','none'], required=True,
+                        help="Type of regularization (l1, l2, l_infinty)")
+    parser.add_argument("--regularization_param", type=float, required=False, default=0,
+                        help="Regularization parameter value")
+
+    args = parser.parse_args()
+
     # Check for CUDA
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"device is {device}")
     seed = 42
     set_seed(seed)
-
-    # # Define your epochs, learning rate, dataset names, model names, and regularizations here
-    # epochs = 10
-    # batch_size = 256
-    # lr = 0.001
-    # DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
-    # MODELS = ['resnet18']# 'alexnet', 'resnet18']
-    # COMPATIBLE_MODELS = {
-    #     # Define which models are compatible with which datasets
-    #     #'CIFAR-10': ['lenet', 'resnet18'],
-    #     'CIFAR-10': ['resnet18'],
-    #     # etc.
-    # }
-
-
     # imagenet pretrained:
-    epochs = 20
+    epochs = 100
     batch_size = 128
-    lr = 0.001
-    DATASETS = ['CIFAR-10'] #['CIFAR-10', 'MNIST', 'ImageNet', 'FASHIONMNIST']
-    MODELS = ['resnet18']# 'alexnet', 'resnet18']
-    pretrained = True
-    COMPATIBLE_MODELS = {
-        # Define which models are compatible with which datasets
-        'CIFAR-10': ['resnet18'],
-       # 'ImageNet': ['resnet50'],
-        # etc.
+    lr = 0.0001
 
-    }
-
-
-
-    REGULARIZATIONS = {
-        'none': None,  # No regularization parameters needed for baseline
-        #'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
-        'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-        'l1': [
-            1e-5,  # Very Small
-            2e-5,
-            5e-5,
-            1e-4,  # Small
-            2e-4,
-            5e-4,
-            1e-3,  # Moderate
-            2e-3,
-            5e-3,  # High
-            1e-2   # Very High
-        ],
-        # 'l2': [
-        #         1e-5,  # Very Low
-        #         2e-5,
-        #         5e-5,  # Low
-        #         1e-4,
-        #         2e-4,
-        #         5e-4,  # Medium
-        #         1e-3,  # High
-        #         2e-3,
-        #         5e-3,  # Very High
-        #         1e-2
-        #     ],
-        # 'l_infinty': [0.1, 0.01, 1,10,100]  # Different L-infinity regularization strengths
-    }
-
+    dataset_name = 'CIFAR-10'
+    model_name = 'resnet18'
+    reg_name = args.regularization_type
+    reg_param = args.regularization_param
     logger = Logger()
     run_experiments(device, pretrained = False, num_classes=10)
+
+

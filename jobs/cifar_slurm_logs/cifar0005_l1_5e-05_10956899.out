@@ -1,0 +1,116 @@
+device is cuda:0
+Files already downloaded and verified
+Files already downloaded and verified
+SGD (
+Parameter Group 0
+    dampening: 0
+    differentiable: False
+    foreach: None
+    initial_lr: 0.0001
+    lr: 0.0001
+    maximize: False
+    momentum: 0.9
+    nesterov: False
+    weight_decay: 0
+)
+Epoch 1/100 - Train Loss: 1.9855, Test Loss: 1.9861
+Epoch 2/100 - Train Loss: 1.8320, Test Loss: 1.8333
+Epoch 3/100 - Train Loss: 1.7505, Test Loss: 1.7535
+Epoch 4/100 - Train Loss: 1.6847, Test Loss: 1.6892
+Epoch 5/100 - Train Loss: 1.6234, Test Loss: 1.6296
+Epoch 6/100 - Train Loss: 1.5671, Test Loss: 1.5747
+Epoch 7/100 - Train Loss: 1.5146, Test Loss: 1.5240
+Epoch 8/100 - Train Loss: 1.4701, Test Loss: 1.4825
+Epoch 9/100 - Train Loss: 1.4389, Test Loss: 1.4523
+Epoch 10/100 - Train Loss: 1.3941, Test Loss: 1.4137
+Epoch 11/100 - Train Loss: 1.3708, Test Loss: 1.3911
+Epoch 12/100 - Train Loss: 1.3278, Test Loss: 1.3542
+Epoch 13/100 - Train Loss: 1.2997, Test Loss: 1.3307
+Epoch 14/100 - Train Loss: 1.2688, Test Loss: 1.3029
+Epoch 15/100 - Train Loss: 1.2622, Test Loss: 1.2997
+Epoch 16/100 - Train Loss: 1.2185, Test Loss: 1.2603
+Epoch 17/100 - Train Loss: 1.2112, Test Loss: 1.2573
+Epoch 18/100 - Train Loss: 1.1772, Test Loss: 1.2277
+Epoch 19/100 - Train Loss: 1.1533, Test Loss: 1.2075
+Epoch 20/100 - Train Loss: 1.1340, Test Loss: 1.1893
+Epoch 21/100 - Train Loss: 1.1275, Test Loss: 1.1825
+Epoch 22/100 - Train Loss: 1.0889, Test Loss: 1.1508
+Epoch 23/100 - Train Loss: 1.0830, Test Loss: 1.1509
+Epoch 24/100 - Train Loss: 1.0597, Test Loss: 1.1322
+Epoch 25/100 - Train Loss: 1.0325, Test Loss: 1.1088
+Epoch 26/100 - Train Loss: 1.0147, Test Loss: 1.0932
+Epoch 27/100 - Train Loss: 0.9984, Test Loss: 1.0820
+Epoch 28/100 - Train Loss: 0.9818, Test Loss: 1.0691
+Epoch 29/100 - Train Loss: 0.9715, Test Loss: 1.0635
+Epoch 30/100 - Train Loss: 0.9826, Test Loss: 1.0811
+Epoch 31/100 - Train Loss: 0.9587, Test Loss: 1.0571
+Epoch 32/100 - Train Loss: 0.9345, Test Loss: 1.0420
+Epoch 33/100 - Train Loss: 0.9264, Test Loss: 1.0307
+Epoch 34/100 - Train Loss: 0.9004, Test Loss: 1.0123
+Epoch 35/100 - Train Loss: 0.8888, Test Loss: 1.0046
+Epoch 36/100 - Train Loss: 0.8797, Test Loss: 1.0003
+Epoch 37/100 - Train Loss: 0.8874, Test Loss: 1.0182
+Epoch 38/100 - Train Loss: 0.8840, Test Loss: 1.0140
+Epoch 39/100 - Train Loss: 0.8415, Test Loss: 0.9782
+Epoch 40/100 - Train Loss: 0.8270, Test Loss: 0.9732
+Epoch 41/100 - Train Loss: 0.8179, Test Loss: 0.9661
+Epoch 42/100 - Train Loss: 0.8112, Test Loss: 0.9678
+Epoch 43/100 - Train Loss: 0.7941, Test Loss: 0.9535
+Epoch 44/100 - Train Loss: 0.8040, Test Loss: 0.9703
+Epoch 45/100 - Train Loss: 0.7719, Test Loss: 0.9456
+Epoch 46/100 - Train Loss: 0.7789, Test Loss: 0.9609
+Epoch 47/100 - Train Loss: 0.7689, Test Loss: 0.9591
+Epoch 48/100 - Train Loss: 0.7510, Test Loss: 0.9440
+Epoch 49/100 - Train Loss: 0.7331, Test Loss: 0.9359
+Epoch 50/100 - Train Loss: 0.7275, Test Loss: 0.9377
+Epoch 51/100 - Train Loss: 0.7009, Test Loss: 0.9182
+Epoch 52/100 - Train Loss: 0.6980, Test Loss: 0.9180
+Epoch 53/100 - Train Loss: 0.6962, Test Loss: 0.9169
+Epoch 54/100 - Train Loss: 0.6959, Test Loss: 0.9165
+Epoch 55/100 - Train Loss: 0.6951, Test Loss: 0.9188
+Epoch 56/100 - Train Loss: 0.6926, Test Loss: 0.9152
+Epoch 57/100 - Train Loss: 0.6939, Test Loss: 0.9189
+Epoch 58/100 - Train Loss: 0.6910, Test Loss: 0.9189
+Epoch 59/100 - Train Loss: 0.6902, Test Loss: 0.9163
+Epoch 60/100 - Train Loss: 0.6888, Test Loss: 0.9176
+Epoch 61/100 - Train Loss: 0.6871, Test Loss: 0.9177
+Epoch 62/100 - Train Loss: 0.6853, Test Loss: 0.9155
+Epoch 63/100 - Train Loss: 0.6827, Test Loss: 0.9171
+Epoch 64/100 - Train Loss: 0.6832, Test Loss: 0.9184
+Epoch 65/100 - Train Loss: 0.6807, Test Loss: 0.9167
+Epoch 66/100 - Train Loss: 0.6793, Test Loss: 0.9165
+Epoch 67/100 - Train Loss: 0.6794, Test Loss: 0.9176
+Epoch 68/100 - Train Loss: 0.6777, Test Loss: 0.9153
+Epoch 69/100 - Train Loss: 0.6776, Test Loss: 0.9169
+Epoch 70/100 - Train Loss: 0.6777, Test Loss: 0.9158
+Epoch 71/100 - Train Loss: 0.6733, Test Loss: 0.9173
+Epoch 72/100 - Train Loss: 0.6731, Test Loss: 0.9165
+Epoch 73/100 - Train Loss: 0.6709, Test Loss: 0.9168
+Epoch 74/100 - Train Loss: 0.6699, Test Loss: 0.9173
+Epoch 75/100 - Train Loss: 0.6722, Test Loss: 0.9193
+Epoch 76/100 - Train Loss: 0.6680, Test Loss: 0.9162
+Epoch 77/100 - Train Loss: 0.6679, Test Loss: 0.9165
+Epoch 78/100 - Train Loss: 0.6681, Test Loss: 0.9162
+Epoch 79/100 - Train Loss: 0.6744, Test Loss: 0.9215
+Epoch 80/100 - Train Loss: 0.6670, Test Loss: 0.9162
+Epoch 81/100 - Train Loss: 0.6686, Test Loss: 0.9166
+Epoch 82/100 - Train Loss: 0.6684, Test Loss: 0.9168
+Epoch 83/100 - Train Loss: 0.6666, Test Loss: 0.9152
+Epoch 84/100 - Train Loss: 0.6667, Test Loss: 0.9158
+Epoch 85/100 - Train Loss: 0.6671, Test Loss: 0.9154
+Epoch 86/100 - Train Loss: 0.6660, Test Loss: 0.9159
+Epoch 87/100 - Train Loss: 0.6666, Test Loss: 0.9155
+Epoch 88/100 - Train Loss: 0.6661, Test Loss: 0.9162
+Epoch 89/100 - Train Loss: 0.6678, Test Loss: 0.9158
+Epoch 90/100 - Train Loss: 0.6660, Test Loss: 0.9153
+Epoch 91/100 - Train Loss: 0.6657, Test Loss: 0.9160
+Epoch 92/100 - Train Loss: 0.6663, Test Loss: 0.9160
+Epoch 93/100 - Train Loss: 0.6671, Test Loss: 0.9160
+Epoch 94/100 - Train Loss: 0.6668, Test Loss: 0.9162
+Epoch 95/100 - Train Loss: 0.6648, Test Loss: 0.9147
+Epoch 96/100 - Train Loss: 0.6651, Test Loss: 0.9149
+Epoch 97/100 - Train Loss: 0.6674, Test Loss: 0.9163
+Epoch 98/100 - Train Loss: 0.6654, Test Loss: 0.9161
+Epoch 99/100 - Train Loss: 0.6678, Test Loss: 0.9201
+Epoch 100/100 - Train Loss: 0.6664, Test Loss: 0.9171
+total size: 1.0394058227539062

@@ -1,0 +1,50 @@
+sbatch CIFAR18 JOBS l1_1e-05.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_2e-05.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_5e-05.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_0.0001.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_0.0002.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_0.0005.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_0.001.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_0.002.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_0.005.slurm
+sleep 1
+sbatch CIFAR18 JOBS l1_0.01.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_1e-05.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_2e-05.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_5e-05.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_0.0001.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_0.0002.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_0.0005.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_0.001.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_0.002.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_0.005.slurm
+sleep 1
+sbatch CIFAR18 JOBS l2_0.01.slurm
+sleep 1
+sbatch CIFAR18 JOBS l_infinty_0.1.slurm
+sleep 1
+sbatch CIFAR18 JOBS l_infinty_0.01.slurm
+sleep 1
+sbatch CIFAR18 JOBS l_infinty_1.slurm
+sleep 1
+sbatch CIFAR18 JOBS l_infinty_10.slurm
+sleep 1
+sbatch CIFAR18 JOBS l_infinty_100.slurm
+sleep 1

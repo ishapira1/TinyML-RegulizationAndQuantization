@@ -2,12 +2,12 @@
 #SBATCH -n 1 # Number of cores requested
 #SBATCH -N 1 # Ensure that all cores are on one machine
 #SBATCH -t 600 # Runtime in minutes (10 hours)
-#SBATCH -p gpu,seas_gpu # Partition to submit to
+#SBATCH -p seas_gpu # Partition to submit to
 #SBATCH --gres=gpu:1
 #SBATCH --mem=80000 # Memory total in MB
 #SBATCH --open-mode=append
-#SBATCH -o /n/home12/ishapira/git_connection/TinyML-RegulizationAndQuantization/jobs/slurm_logs/{NAME}_%j.out # Standard out goes to this file
-#SBATCH -e /n/home12/ishapira/git_connection/TinyML-RegulizationAndQuantization/jobs/slurm_logs/{NAME}_%j.err # Standard err goes to this file
+#SBATCH -o /n/home12/ishapira/git_connection/TinyML-RegulizationAndQuantization/jobs/slurm_logs/quant_{PATH}_{bit_width}_%j.out # Standard out goes to this file
+#SBATCH -e /n/home12/ishapira/git_connection/TinyML-RegulizationAndQuantization/jobs/slurm_logs/quant_{PATH}_{bit_width}_%j.err # Standard err goes to this file
 
 module load Anaconda2/2019.10-fasrc01
 source activate itai_ml_env

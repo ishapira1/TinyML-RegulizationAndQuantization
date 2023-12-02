@@ -53,7 +53,7 @@ def process(model_name, dataset, batch_size, device, bit_width, checkpoint_path,
 
     logger.append_log(quantization_method=f"PTQ_bit_{bit_width}",bit_width=bit_width,
                       model = quantized_model, train_loss=train_loss, test_loss=test_loss,train_accuracy=train_accuracy, test_accuracy=test_accuracy,model_name=model_name, 
-                      reg_name=reg_name, param=rag_parm, dataset_name=dataset, exp_dir=exp_dir)
+                      reg_name=reg_name, param=rag_parm, dataset_name=dataset, exp_dir=exp_dir, checkpoint_path=checkpoint_path)
     print("logger.append_log( - DONE")
     return model
 
