@@ -38,4 +38,5 @@ notebooks/results.png
 jobs/slurm_logs/
 notebooks/.ipynb_checkpoints/
 jobs/all_jobs.txt
+jobs/
 model_checkpoint.pth
