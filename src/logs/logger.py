@@ -112,9 +112,6 @@ class Logger:
         checkpoint_path = os.path.join(exp_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
         save(model.state_dict(), checkpoint_path)
 
-    def append_log(self, exp_dir, quantization_method, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
-        print("append_log")
-        sub_dir = os.path.join(exp_dir, quantization_method)
 
     def append_log(self, checkpoint_path, bit_width, model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, **kwargs):
         exp_dir = os.path.split(checkpoint_path)[0]
