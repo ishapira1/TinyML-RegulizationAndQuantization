@@ -6,7 +6,8 @@ from src.logs.logger import Logger
 from src.quantization.quantizer import Quantizer
 from tqdm.auto import tqdm
 from torch.optim import Adam
-import os
+from brevitas.nn import QuantConv2d, QuantLinear
+import os, sys
 
 def set_seed(seed):
     """
@@ -31,6 +32,37 @@ def quantize_model(model, dataset, device,  bit_width=8, batch_size=128, verbose
     quantizer = Quantizer(model, dataloaders, criterion = torch.nn.CrossEntropyLoss(), device=device, bit_width=bit_width, verbose=verbose)
 
     return quantizer.quantize()
+
+def weight_space_l2_distance(model, quantized_model):
+    # for name, param in quantized_named_tensors[:10]:
+    #     print(name, param.size())
+    quantized_named_tensors = []
+    for module_name, module in quantized_model.named_modules():
+        # if 'conv' in module_name:
+        #     print(module_name, type(module_name))
+        if isinstance(module, (QuantConv2d, QuantLinear)):
+            # print(f'{module_name} of type {type(module).mro()} is a quant shit')
+            # scaled_weight = module.quant_weight()
+            quantized_named_tensors.append((module_name, module.quant_weight().value))
+        # else:
+        #     for name, param in module.named_parameters():
+        #         if isinstance(param, torch.nn.Parameter):
+        #             quantized_named_tensors.append((name, param))
+
+    
+    # for name_param, quantized_name_param in list(zip(model.named_parameters(), quantized_model.named_parameters()))[:15]:
+    overall_param_count, d2, overall_norm = 0, 0., 0.
+    for name_param, quantized_name_param in list(zip(model.named_parameters(), quantized_named_tensors)):
+        name, param = name_param
+        quantized_name, quantized_param = quantized_name_param
+        overall_param_count += param.numel()
+        d2 += ((param - quantized_param) ** 2).sum()
+        overall_norm += (param ** 2).sum()
+        # print(name, quantized_name, param.size(), quantized_param.size(), type(quantized_param).mro())
+        assert param.size() == quantized_param.size() and name == quantized_name + '.weight'
+    print(f'l2 norm = {d2 / overall_norm * 100.} percent')
+    sys.exit()
+    return d2
 
 def run_experiments(device, num_classes=10, pretrained=False):
     """
@@ -60,14 +92,17 @@ def run_experiments(device, num_classes=10, pretrained=False):
 
                                 model.to(device)
 
-                                quantized_model,_,_,_,_= quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
+                                print(f'bit_width {bit_width}:')
+                                quantized_model,_,_,_,_,_,_= quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
-                                state_dict = torch.load(os.path.join(os.path.split(checkpoint_path)[0], f"bit_width_{bit_width}", "model_checkpoint.pth"))
+                                quantized_state_dict = torch.load(os.path.join(os.path.split(checkpoint_path)[0], f"bit_width_{bit_width}", "model_checkpoint.pth"))
 
-                                quantized_model.load_state_dict(state_dict)
+                                quantized_model.load_state_dict(quantized_state_dict)
 
-                                print(quantized_model.model)
-                                print(quantized_model.model.conv1.quant_weight())
+                                # print(quantized_model.model)
+                                # print(quantized_model.model.conv1.quant_weight())
+                                # print(model.model.conv1)
+                                weight_space_l2_distance(model, quantized_model)
 
                     else:  # Regularizations without parameters
                         # Set flags for batch_norm and layer_norm based on reg_name
@@ -82,14 +117,18 @@ def run_experiments(device, num_classes=10, pretrained=False):
                             
                             model.to(device)
 
+
+                            print(f'bit_width {bit_width}:')
                             quantized_model, _,_,_,_= quantize_model(model, dataset_name, bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
-                            state_dict = torch.load(os.path.join(os.path.split(checkpoint_path)[0], f"bit_width_{bit_width}", "model_checkpoint.pth"))
+                            quantized_state_dict = torch.load(os.path.join(os.path.split(checkpoint_path)[0], f"bit_width_{bit_width}", "model_checkpoint.pth"))
 
-                            quantized_model.load_state_dict(state_dict)
+                            quantized_model.load_state_dict(quantized_state_dict)
 
-                            print(quantized_model.model)
-                            print(quantized_model.model.conv1.quant_weight())
+                            # print(quantized_model.model)
+                            # print(quantized_model.model.conv1.quant_weight())
+                            # print(model.model.conv1)
+                            weight_space_l2_distance(model, quantized_model)
 
 
 if __name__ == '__main__':
@@ -135,9 +174,9 @@ if __name__ == '__main__':
     }
 
     BIT_WIDTH = {
-        # 2,
-        # 4,
-        # 8,
+        2,
+        4,
+        8,
         16
     }
 

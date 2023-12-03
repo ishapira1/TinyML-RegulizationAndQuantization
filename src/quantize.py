@@ -60,11 +60,11 @@ def run_experiments(device, num_classes=10, pretrained=False):
 
                                 model.to(device)
 
-                                quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
+                                quantized_model, train_loss, test_loss, train_accuracy, test_accuracy, train_kl, test_kl, reconstruction_loss = quantize_model(model, dataset_name,  bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
 
                                 quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
 
-                                logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                                logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, param, train_accuracy, test_accuracy, train_kl=train_kl, test_kl=test_kl, reconstruction_loss=reconstruction_loss, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
                     else:  # Regularizations without parameters
                         # Set flags for batch_norm and layer_norm based on reg_name
                         checkpoint_paths = logger.get_checkpoint(model_name, dataset_name, reg_name, None)
@@ -81,10 +81,10 @@ def run_experiments(device, num_classes=10, pretrained=False):
 
                             model.to(device)
 
-                            quantized_model, train_loss, test_loss, train_accuracy, test_accuracy = quantize_model(model, dataset_name, bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
+                            quantized_model, train_loss, test_loss, train_accuracy, test_accuracy, train_kl, test_kl, reconstruction_loss = quantize_model(model, dataset_name, bit_width=bit_width, device=device, batch_size=batch_size, verbose=True)
                             quantized_checkpoint_path = os.path.join(os.path.split(checkpoint_path)[0], "quantized_checkpoint.pth")
 
-                            logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
+                            logger.append_log(quantized_checkpoint_path, bit_width, quantized_model, train_loss, test_loss, model_name, dataset_name, reg_name, None, train_accuracy, test_accuracy, train_kl=train_kl, test_kl=test_kl, reconstruction_loss=reconstruction_loss, lr=lr, device=str(device), batch_size=batch_size, seed=seed, pretrained=pretrained)
 
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -129,9 +129,9 @@ if __name__ == '__main__':
     }
 
     BIT_WIDTH = {
-        # 2,
-        # 4,
-        # 8,
+        2,
+        4,
+        8,
         16
     }
 
