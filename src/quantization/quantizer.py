@@ -1,6 +1,8 @@
 import torch
 from src.quantization.ptq_common import quantize_model, calibrate
 from brevitas.graph.quantize import preprocess_for_quantize
+from brevitas.nn import QuantConv2d, QuantLinear
+# from torch.nn.functional import kl_div
 
 class Quantizer:
     def __init__(self, model, dataloaders, criterion, device, bit_width=8, regularization=None, verbose=True):
@@ -23,27 +25,28 @@ class Quantizer:
         self.regularization = regularization if regularization else {}
         self.quantized_model = None
 
-    def _compute_quantized_accuracy(self, dataloader):
-        correct = 0
-        total = 0
+    def _compute_quantized_stats(self, dataloader):
+        self.quantized_model.eval()
+        self.model.eval()
+        
+        correct, total = 0, 0
+        running_loss, running_kl = 0., 0.
         with torch.no_grad():
             for inputs, labels in dataloader:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs = self.quantized_model(inputs)
-                _, predicted = torch.max(outputs.data, 1)
+                outputs = self.model(inputs)
+                quantized_outputs = self.quantized_model(inputs)
+                _, predicted = torch.max(quantized_outputs.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
+                running_loss += self.criterion(quantized_outputs, labels)
+                running_kl += self._kl_divergence(torch.softmax(quantized_outputs, dim=1), torch.softmax(outputs, dim=1)).sum()
         accuracy = 100 * correct / total
-        return accuracy
+        running_loss /= total
+        running_kl /= total
+        return accuracy, running_loss.item(), running_kl.item()
     
     def _apply_quantization(self, model):
-        # if "dynamic" in self.quantization_method:
-        #     quantized_model = quantize_dynamic(model, layers_to_quantize=[torch.nn.Linear, torch.nn.Conv2d])
-        # elif "static" in self.quantization_method:
-        #     quantized_model = quantzize_static(model, self.dataloaders['train']) ##FIXME figure out right fusion
-        # else:
-        #     print("Quantization Method Not Recognized. Returning original Model")
-        #     quantized_model = model
         preprocessed_model = preprocess_for_quantize(
             model,
             equalize_iters=0,
@@ -75,78 +78,32 @@ class Quantizer:
         """
         self.quantized_model = self._apply_quantization(self.model).to(self.device)
 
-        self.quantized_model.eval()
+        train_accuracy, train_loss, train_kl = self._compute_quantized_stats(self.dataloaders['train'])
+        test_accuracy, test_loss, test_kl = self._compute_quantized_stats(self.dataloaders['test'])
 
-        test_running_loss = 0.0
-        train_running_loss = 0.0
-        with torch.no_grad():
-            for inputs, labels in self.dataloaders['test']:
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs = self.model(inputs)
-                loss = self.criterion(outputs, labels)
-                test_running_loss += loss.item() * inputs.size(0)
-            for inputs, labels in self.dataloaders['train']:
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs = self.model(inputs)
-                loss = self.criterion(outputs, labels)
-                train_running_loss += loss.item() * inputs.size(0)
+        reconstruction_loss = self._weight_space_l2_distance(self.model, self.quantized_model)
+        print(f'train_acc={train_accuracy}, test_acc={test_accuracy}\ntrain_loss={train_loss}, test_loss={test_loss}\ntrain_kl={train_kl}, test_kl={test_kl}\nreconstruction_loss={reconstruction_loss}')
+        return self.quantized_model, train_loss, test_loss, train_accuracy, test_accuracy, train_kl, test_kl, reconstruction_loss
 
-        test_loss = test_running_loss / len(self.dataloaders['test'].dataset)
-        train_loss = train_running_loss / len(self.dataloaders['train'].dataset)
+    @staticmethod
+    def _weight_space_l2_distance(model, quantized_model):
+        """ norm of the distance of the weight vectors as a percentage of the overall norm of
+        the weight vector corresponding to the unquantized model """
+        quantized_named_tensors = []
+        for module_name, module in quantized_model.named_modules():
+            if isinstance(module, (QuantConv2d, QuantLinear)):
+                quantized_named_tensors.append((module_name, module.quant_weight().value))
+        
+        overall_param_count, d2, overall_norm = 0, 0., 0.
+        for name_param, quantized_name_param in zip(model.named_parameters(), quantized_named_tensors):
+            name, param = name_param
+            quantized_name, quantized_param = quantized_name_param
+            overall_param_count += param.numel()
+            d2 += ((param - quantized_param) ** 2).sum()
+            overall_norm += (param ** 2).sum()
+            assert param.size() == quantized_param.size() and name == quantized_name + '.weight'
+        return (d2 / overall_norm * 100.).item()
 
-        train_accuracy = self._compute_quantized_accuracy(self.dataloaders['train'])
-        test_accuracy = self._compute_quantized_accuracy(self.dataloaders['test'])
-        return self.quantized_model, train_loss, test_loss,train_accuracy, test_accuracy    
-
-
-def quantize_dynamic(model, layers_to_quantize = [torch.nn.Linear]):
-    """
-    Takes in a model, dynamically quantizes the model, computes loss
-
-    Note dynamic quantization means that the weights are quantized to int8 statically, and activations are dynamically quantized during inference (estimation of scale happens during inference)
-
-    Dynamic quantization docs:
-    https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html
-    """
-    # print("Dynamic Quantization. Quantizing the following modules: \n{}".format(layers_to_quantize))
-
-    model_int8 = torch.ao.quantization.quantize_dynamic(
-        model,  # the original model
-        set(layers_to_quantize),  # a set of layers to dynamically quantize
-        dtype=torch.qint8
-    )
-
-    return model_int8
-
-def quantzize_static(model, dataloader, fuse_modules = None):
-    """
-    Takes in a model, dataloader, and which modules to fuse, and statically quantizes the model, computes loss
-
-    Note static quantization means that the weights and activations are quantized to int8. Requires a representative dataset to estimate range of activations over
-
-    Also, requires fusion of activations and preceding layers, which will change depending on the activations we use.
-
-    Static quantization docs:
-    TODO
-    """
-    # print("Static Quantization. Fusing the following modules: \n{}".format(fuse_modules))
-
-    model.eval()
-
-    model.qconfig = torch.ao.quantization.get_default_qconfig('x86')
-
-    # Fuse the activations to preceding layers, where applicable.
-    # This needs to be done manually depending on the model architecture.
-    # Common fusions include `conv + relu` and `conv + batchnorm + relu`
-    if fuse_modules is not None:
-        model_fused = torch.ao.quantization.fuse_modules(model, fuse_modules)
-    else:
-        model_fused = model
-    model_prepared = torch.ao.quantization.prepare(model_fused)
-
-    for data, _ in dataloader:
-        model_prepared(data)
-
-    model_int8 = torch.ao.quantization.convert(model_prepared)
-
-    return model_int8
+    @staticmethod
+    def _kl_divergence(p, q):
+        return torch.sum(p * (torch.log(p) - torch.log(q)), dim=1)
