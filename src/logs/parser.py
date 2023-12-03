@@ -112,6 +112,7 @@ def extract_key_if_dict(value):
 
 def clean_data(df):
     # Merge 'num_epochs' and 'epochs' columns
+    
     if "epochs" in df.columns:
         df['num_epochs'] = df['num_epochs'].fillna(df['epochs'])
         df = df.drop(columns=['epochs'])
@@ -122,7 +123,7 @@ def clean_data(df):
     df['regularization'] = df['regularization'].apply(extract_key_if_dict)
 
     # Columns to consider for identifying duplicates
-    duplicate_cols = ['model_name', 'total_weights', 'seed', 'dataset_name', 
+    duplicate_cols = ['model_name', 'seed', 'dataset_name', 
                       'regularization', 'regularization_param', 'num_epochs', 
                       'train_loss', 'test_loss']
 
@@ -152,11 +153,12 @@ def parser():
         experiment_record = {}
 
         # Check if the checkpoint file exists
-        if os.path.isfile(checkpoint_path):
+        if os.path.isfile(results_file):
             try:
                 weight_stats = calculate_weight_statistics(checkpoint_path)
                 experiment_record.update(weight_stats)
             except:
+                print("="*100)
                 pass
 
             # Check if the results file exists
@@ -166,26 +168,27 @@ def parser():
                     experiment_record.update(record)
                     experiment_record['path'] = exp_dir
 
+
         # Load quantization models
         if os.path.isdir(exp_dir):
             for quantization_method in os.listdir(exp_dir):
+                
                 quantization_dir = os.path.join(exp_dir, quantization_method)
                 results_file = os.path.join(quantization_dir, RESULTS_FILE_NAME_IN_LOGS)
                 checkpoint_path = os.path.join(quantization_dir, CHECKPOINT_FILE_NAME_IN_LOGS)
-
-                if os.path.isfile(checkpoint_path) and "dynamic_quantization" not in quantization_dir:
-
+                
+                if os.path.isfile(results_file):
                     # Check if the results file exists
                     if os.path.isfile(results_file):
                         with open(results_file, 'r') as f:
                             try:
                                 sub_record = json.load(f)
                             except:
-                                print(f"error {results_file}")
                                 continue
                             bit_width = sub_record.get('bit_width', 'unknown')
                             sub_record_path = f'bit_{bit_width}_path'
                             experiment_record[sub_record_path] = quantization_dir
+
 
                             # Prefix sub-record keys and add to experiment record
                             for key in ['train_loss', 'test_loss', 'train_accuracy', 'test_accuracy']:
@@ -195,11 +198,16 @@ def parser():
 
         # Add the experiment record to the list
         all_records.append(experiment_record)
+    
+    print()
+    for record in all_records:
+        if 'model_name' not in record:
+            print(f"bad record! {record}")
 
     # Create a DataFrame from the records
     df = pd.DataFrame(all_records)
-
     df = clean_data(df)
+    
     save_dataframe(df, logger)
     return df
 
