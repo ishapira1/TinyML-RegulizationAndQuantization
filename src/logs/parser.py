@@ -185,13 +185,15 @@ def parser():
                                 sub_record = json.load(f)
                             except:
                                 continue
+                            if results_file == '/n/holyscratch01/barak_lab/Users/ishapira/results/ishapira_resnet18_CIFAR-10_l2_0.001_2023-12-01_13-35-27/bit_width_4/results.json':
+                                print('yey')
                             bit_width = sub_record.get('bit_width', 'unknown')
                             sub_record_path = f'bit_{bit_width}_path'
                             experiment_record[sub_record_path] = quantization_dir
 
 
                             # Prefix sub-record keys and add to experiment record
-                            for key in ['train_loss', 'test_loss', 'train_accuracy', 'test_accuracy']:
+                            for key in ['train_loss', 'test_loss', 'train_accuracy', 'test_accuracy', 'test_kl', 'train_kl', 'reconstruction_loss']:
                                 if key in sub_record:
                                     prefixed_key = f'bit_{bit_width}_{key}'
                                     experiment_record[prefixed_key] = sub_record[key]

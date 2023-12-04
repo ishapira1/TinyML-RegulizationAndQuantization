@@ -20,8 +20,9 @@ def save_dataframe(df, logger):
 
 
 def load_results():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    main_dir = os.path.dirname(os.path.dirname(script_dir))
+    # script_dir = os.path.dirname(os.path.abspath(__file__))
+    # main_dir = os.path.dirname(os.path.dirname(script_dir))
+    main_dir = "/n/holyscratch01/barak_lab/Users/ishapira/"
     log_dir = os.path.join(main_dir, 'results')
     return pd.read_csv(os.path.join(log_dir, RESULTS_CSV_FILE_NAME))
 
@@ -59,8 +60,9 @@ def get_model_size_in_mb(model, bit_width=None):
 
 class Logger:
     def __init__(self, log_dir="logs"):
-        self.script_dir = os.path.dirname(os.path.abspath(__file__))  # "logs"
-        self.main_dir = os.path.dirname(os.path.dirname(self.script_dir)) # main dir
+        # self.script_dir = os.path.dirname(os.path.abspath(__file__))  # "logs"
+        # self.main_dir = os.path.dirname(os.path.dirname(self.script_dir)) # main dir
+        self.main_dir = "/n/holyscratch01/barak_lab/Users/ishapira/"
 
         self.log_dir = os.path.join(self.main_dir, 'results')
         if not os.path.exists(self.log_dir):
