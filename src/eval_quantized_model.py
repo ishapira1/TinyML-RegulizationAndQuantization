@@ -49,10 +49,15 @@ def weight_space_l2_distance(model, quantized_model):
         #         if isinstance(param, torch.nn.Parameter):
         #             quantized_named_tensors.append((name, param))
 
-    
+    named_parameters = []
+    for name, param in model.named_parameters():
+        if 'bias' in name:
+            continue
+        named_parameters.append((name, param))
+
     # for name_param, quantized_name_param in list(zip(model.named_parameters(), quantized_model.named_parameters()))[:15]:
     overall_param_count, d2, overall_norm = 0, 0., 0.
-    for name_param, quantized_name_param in list(zip(model.named_parameters(), quantized_named_tensors)):
+    for name_param, quantized_name_param in list(zip(named_parameters, quantized_named_tensors)):
         name, param = name_param
         quantized_name, quantized_param = quantized_name_param
         overall_param_count += param.numel()

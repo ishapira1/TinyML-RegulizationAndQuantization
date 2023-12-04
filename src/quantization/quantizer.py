@@ -21,7 +21,6 @@ class Quantizer:
         self.device = device
         print(f"self.device = {device}")
         self.bit_width = bit_width
-        self.bit_width = bit_width
         self.regularization = regularization if regularization else {}
         self.quantized_model = None
 
@@ -29,21 +28,23 @@ class Quantizer:
         self.quantized_model.eval()
         self.model.eval()
         
-        correct, total = 0, 0
+        correct, total, baseline_correct = 0, 0, 0
         running_loss, running_kl = 0., 0.
         with torch.no_grad():
             for inputs, labels in dataloader:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
+                baseline_correct += (torch.max(outputs, 1)[1] == labels).sum().item()
                 quantized_outputs = self.quantized_model(inputs)
                 _, predicted = torch.max(quantized_outputs.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-                running_loss += self.criterion(quantized_outputs, labels)
+                running_loss += self.criterion(quantized_outputs, labels) * labels.size(0)
                 running_kl += self._kl_divergence(torch.softmax(quantized_outputs, dim=1), torch.softmax(outputs, dim=1)).sum()
         accuracy = 100 * correct / total
         running_loss /= total
         running_kl /= total
+        print(f'baseline -> {100 * baseline_correct / total}')
         return accuracy, running_loss.item(), running_kl.item()
     
     def _apply_quantization(self, model):
@@ -82,7 +83,7 @@ class Quantizer:
         test_accuracy, test_loss, test_kl = self._compute_quantized_stats(self.dataloaders['test'])
 
         reconstruction_loss = self._weight_space_l2_distance(self.model, self.quantized_model)
-        print(f'train_acc={train_accuracy}, test_acc={test_accuracy}\ntrain_loss={train_loss}, test_loss={test_loss}\ntrain_kl={train_kl}, test_kl={test_kl}\nreconstruction_loss={reconstruction_loss}')
+        print(f'bit_wdith={self.bit_width} =>\ntrain_acc={train_accuracy}, test_acc={test_accuracy}\ntrain_loss={train_loss}, test_loss={test_loss}\ntrain_kl={train_kl}, test_kl={test_kl}\nreconstruction_loss={reconstruction_loss}')
         return self.quantized_model, train_loss, test_loss, train_accuracy, test_accuracy, train_kl, test_kl, reconstruction_loss
 
     @staticmethod
@@ -93,9 +94,15 @@ class Quantizer:
         for module_name, module in quantized_model.named_modules():
             if isinstance(module, (QuantConv2d, QuantLinear)):
                 quantized_named_tensors.append((module_name, module.quant_weight().value))
+
+        named_parameters = []
+        for name, param in model.named_parameters():
+            if 'bias' in name:
+                continue
+            named_parameters.append((name, param))
         
         overall_param_count, d2, overall_norm = 0, 0., 0.
-        for name_param, quantized_name_param in zip(model.named_parameters(), quantized_named_tensors):
+        for name_param, quantized_name_param in zip(named_parameters, quantized_named_tensors):
             name, param = name_param
             quantized_name, quantized_param = quantized_name_param
             overall_param_count += param.numel()
