@@ -14,48 +14,31 @@ pip install -e .
   - `src/models/`: Contains the definitions and utilities for the models.git
   - `src/training/`: Manages the training process of the models.
   - `src/logs/`: Includes `logger.py` for logging experiment details and `parser.py` for converting logs into a summarized CSV file.
+  - `src/quantization/`: handles quantization process
+
+- `jobs/`: Define, handles and log slurm jobs
+
 
 ## Usage
 
 To run an experiment with a predefined set of parameters, execute `src/main.py`. 
 
-minimalist example (implemented in `src/main.py` ):
+minimalist examples:
+
+This example demonstrates how to run the script on the CIFAR-10 dataset using the ResNet18 model with a specific learning rate and regularization parameter.
 
 ```python
-import torch
-from src.data_loaders.dataset_loader import load_dataset
-from src.models.model_registry import create_model
-from src.training.trainer import Trainer
-from src.logs.logger import Logger
-from tqdm import tqdm
-from torch.optim import Adam
+python3 main.py --dataset_name CIFAR-10 --model_name resnet18 --lr 0.001 --regularization_type l2 --regularization_param 0.1 --epochs 50 --batch_size 64
+```
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-seed = 42
-set_seed(seed)
+This example shows how to run the script on the MNIST dataset using the LeNet model with a specific batch size, number of epochs, and L1 regularization.
+```python
+python3 main.py --dataset_name MNIST --model_name lenet --batch_size 32 --epochs 100 --regularization_type l1 --regularization_param 0.05
+```
 
-# Define your epochs, learning rate, dataset names, model names, and regularizations here
-epochs = 2
-batch_size = 256
-lr = 0.001
-DATASETS = ['MNIST','CIFAR-10', 'MNIST', 'IMAGENET', 'FASHIONMNIST']
-MODELS = ['lenet','alexnet', 'resnet18']
-COMPATIBLE_MODELS = {
-    # Define which models are compatible with which datasets
-    'CIFAR-10': ['lenet', 'resnet18'],
-    'MNIST': ['lenet'],
-    # etc.
-}
-REGULARIZATIONS = {
-    'none': None,  # No regularization parameters needed for baseline
-    'batch_norm': None,  # Batch normalization typically does not require explicit parameters
-    'layer_norm': None,  # Layer normalization also typically does not require explicit parameters
-    'dropout': [0.3, 0.5, 0.7],  # Different dropout rates to experiment with
-    'l1': [0.1, 0.01, 0.001, 0.0001],  # Different L1 regularization strengths
-    'l2': [0.1, 0.01, 0.001, 0.0001],  # Different L2 regularization strengths
-    'l_infinty': [0.1, 0.01, 0.001]  # Different L-infinity regularization strengths
-}
 
-logger = Logger()
-run_experiments(device)
+Our quantizer script allows you to easily quantize a pre-trained model to a specified bit width.  To quantize a model, use the following command:
+
+```python
+python3 quantizer_main.py --path <model_checkpoint_path> --bit_width <bit_width>
 ```
