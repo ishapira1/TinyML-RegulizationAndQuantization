@@ -27,18 +27,18 @@ minimalist examples:
 
 This example demonstrates how to run the script on the CIFAR-10 dataset using the ResNet18 model with a specific learning rate and regularization parameter.
 
-```python
-python3 main.py --dataset_name CIFAR-10 --model_name resnet18 --lr 0.001 --regularization_type l2 --regularization_param 0.1 --epochs 50 --batch_size 64
+```bash
+cd src && python3 main.py --dataset_name CIFAR-10 --model_name resnet18 --lr 0.001 --regularization_type l2 --regularization_param 0.1 --epochs 50 --batch_size 64
 ```
 
 This example shows how to run the script on the MNIST dataset using the LeNet model with a specific batch size, number of epochs, and L1 regularization.
-```python
-python3 main.py --dataset_name MNIST --model_name lenet --batch_size 32 --epochs 100 --regularization_type l1 --regularization_param 0.05
+```bash
+cd src && python3 main.py --dataset_name MNIST --model_name lenet --batch_size 32 --epochs 100 --regularization_type l1 --regularization_param 0.05
 ```
 
 
 Our quantizer script allows you to easily quantize a pre-trained model to a specified bit width.  To quantize a model, use the following command:
 
 ```python
-python3 quantizer_main.py --path <model_checkpoint_path> --bit_width <bit_width>
+cd src && python3 quantizer_main.py --path <model_path> --bit_width <bit_width>
 ```
